@@ -1,0 +1,5 @@
+﻿{
+  "project": "cookbook-pap",
+  "environment": "production",
+  "service": "cookbook-frontend"
+}
