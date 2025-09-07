@@ -1,6 +1,6 @@
 ﻿from fastapi import APIRouter, HTTPException
 from app.models.recipe import RecipeWithID
-from backend.app.utils.firebase import db
+from app.utils.firebase import db
 
 router = APIRouter()
 

@@ -1,7 +1,7 @@
 ﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routes import get_handler, patch_handler, delete_handler, post_handler
+from app.routes import get_handler, patch_handler, delete_handler, post_handler
 
 def create_app():
     app = FastAPI()
