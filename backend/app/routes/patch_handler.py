@@ -4,11 +4,16 @@ from app.utils.firebase import db
 
 router = APIRouter()
 
-@router.patch("/api/recipes/{recipe_id}")
-def update_recipe(recipe_id: str, recipe: Recipe):
+@router.patch("/api/recipes/{recipe_id}", response_model=Recipe)
+def update_recipe(recipe_id: str, updated_data: Recipe):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not initialized")
+
     doc_ref = db.collection("recipes").document(recipe_id)
-    if not doc_ref.get().exists:
+    doc = doc_ref.get()
+
+    if not doc.exists:
         raise HTTPException(status_code=404, detail="Recipe not found")
 
-    doc_ref.update(recipe.dict())
-    return {"message": "Recipe updated"}
+    doc_ref.update(updated_data.dict())
+    return updated_data
