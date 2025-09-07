@@ -31,3 +31,10 @@ def init_firebase():
 
     db = firestore.client()
     print("Firebase client ready")
+
+def get_db():
+    """Return initialized Firestore client (lazy-init safe)."""
+    global db
+    if db is None:
+        init_firebase()
+    return db
