@@ -1,10 +1,18 @@
 ﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
+from app.utils.firebase import init_firebase
 from app.routes import get_handler, patch_handler, delete_handler, post_handler
 
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    init_firebase()
+    yield
+
 def create_app():
-    app = FastAPI()
+    app = FastAPI(lifespan=lifespan)
 
     app.add_middleware(
         CORSMiddleware,
