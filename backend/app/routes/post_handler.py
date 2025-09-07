@@ -1,6 +1,6 @@
 ﻿from fastapi import APIRouter
 from app.models.recipe import Recipe
-from backend.app.utils.firebase import db
+from app.utils.firebase import db
 
 router = APIRouter()
 
