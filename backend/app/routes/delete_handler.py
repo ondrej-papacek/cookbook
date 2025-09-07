@@ -1,5 +1,5 @@
 ﻿from fastapi import APIRouter, HTTPException
-from backend.app.utils.firebase import db
+from app.utils.firebase import db
 
 router = APIRouter()
 
