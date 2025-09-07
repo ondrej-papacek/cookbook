@@ -3,6 +3,10 @@ from firebase_admin import credentials, firestore
 
 def init_firebase():
     cred = credentials.Certificate("firebase-key.json")
-    if not firebase_admin._apps:
+    try:
+        firebase_admin.get_app()
+    except ValueError:
         firebase_admin.initialize_app(cred)
     return firestore.client()
+
+db = init_firebase()
