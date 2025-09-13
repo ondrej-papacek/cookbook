@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.utils.firebase import init_firebase
-from app.routes import get_handler, patch_handler, delete_handler, post_handler
+from app.routes import recipe_handler, category_handler
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -29,7 +29,5 @@ def root():
 def healthz():
     return {"status": "ok"}
 
-app.include_router(get_handler.router)
-app.include_router(patch_handler.router)
-app.include_router(delete_handler.router)
-app.include_router(post_handler.router)
+app.include_router(recipe_handler.router)
+app.include_router(category_handler.router)
