@@ -1,14 +1,17 @@
 ﻿import { useEffect, useState } from "react";
 import { getRecipes } from "../api/recipes";
 
+
 export type Recipe = {
     id: string;
     name: string;
     category: string;
-    tags: string[];
     ingredients: string[];
     steps: string[];
+    tags: string[];
     image?: string;
+    diet?: string[];
+    season?: string;
 };
 
 export function useRecipes() {

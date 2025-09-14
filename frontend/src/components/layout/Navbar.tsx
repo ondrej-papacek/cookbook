@@ -1,87 +1,79 @@
-﻿import {
-    AppBar,
-    Toolbar,
-    Typography,
-    Menu,
-    MenuItem,
-    Box,
-} from "@mui/material";
-import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { getCategories } from "../../api/categories";
-import type { Category } from "../../api/categories";
+﻿import { useEffect, useState } from "react";
+import { AppBar, Toolbar, Box, Collapse } from "@mui/material";
+import { Link, useLocation } from "react-router-dom";
 import { SearchBar } from "./SearchBar";
 import { Button } from "../UI/Button";
+import { CategoryNavbar } from "./CategoryNavbar";
 
 export function Navbar() {
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const [categories, setCategories] = useState<Category[]>([]);
+    const [catsOpen, setCatsOpen] = useState(false);
+    const location = useLocation();
 
     useEffect(() => {
-        getCategories().then(setCategories);
-    }, []);
-
-    const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
+        setCatsOpen(false);
+    }, [location.pathname]);
 
     return (
-        <AppBar
-            position="sticky"
-            elevation={0}
-            sx={{
-                bgcolor: "transparent",
-                color: "white",
-            }}
-        >
-            <Toolbar sx={{ gap: 2 }}>
-                <Typography
-                    variant="h6"
-                    component={Link}
-                    to="/"
-                    style={{ textDecoration: "none", color: "inherit" }}
-                >
-                    Cookbook
-                </Typography>
+        <>
+            <AppBar
+                position="sticky"
+                elevation={0}
+                sx={{
+                    bgcolor: "rgba(255, 255, 255, 0.1)",
+                    backdropFilter: "blur(12px)",
+                    WebkitBackdropFilter: "blur(12px)",
+                    color: "white",
+                }}
+            >
+                <Toolbar sx={{ gap: 2 }}>
+                    <Box
+                        component={Link}
+                        to="/"
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            textDecoration: "none",
+                            color: "inherit",
+                        }}
+                    >
+                        <img
+                            src="/logo-cookbook.png"
+                            alt="Cookbook logo"
+                            style={{
+                                height: "50px",
+                                marginRight: "8px",
+                                borderRadius: "8px",
+                            }}
+                        />
+                    </Box>
 
-                <Button color="inherit" component={Link} to="/">
-                    Domů
-                </Button>
+                    <Button color="inherit" component={Link} to="/">
+                        Domů
+                    </Button>
 
-                {/* Category Dropdown */}
-                <Button color="inherit" onClick={handleOpen}>
-                    Kategorie
-                </Button>
-                <Menu
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl)}
-                    onClose={handleClose}
-                >
-                    {categories.map((cat) => (
-                        <MenuItem
-                            key={cat.id}
-                            component={Link}
-                            to={`/categories/${cat.slug}`}
-                            onClick={handleClose}
-                        >
-                            {cat.name}
-                        </MenuItem>
-                    ))}
-                </Menu>
+                    <Button
+                        color="inherit"
+                        onClick={() => setCatsOpen((o) => !o)}
+                    >
+                        Kategorie
+                    </Button>
 
-                <Button color="inherit" component={Link} to="/add">
-                    Přidat recept
-                </Button>
+                    <Button color="inherit" component={Link} to="/recepty">
+                        Všechny recepty
+                    </Button>
+                    <Button color="inherit" component={Link} to="/add">
+                        Přidat recept
+                    </Button>
 
-                {/* Search Bar — placed at the end */}
-                <Box sx={{ ml: 2, flexGrow: 1, maxWidth: 400 }}>
-                    <SearchBar />
-                </Box>
-            </Toolbar>
-        </AppBar>
+                    <Box sx={{ ml: 2, flexGrow: 1, maxWidth: 400 }}>
+                        <SearchBar />
+                    </Box>
+                </Toolbar>
+            </AppBar>
+
+            <Collapse in={catsOpen} unmountOnExit>
+                <CategoryNavbar onItemClick={() => setCatsOpen(false)} />
+            </Collapse>
+        </>
     );
 }

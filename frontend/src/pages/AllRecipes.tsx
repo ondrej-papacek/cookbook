@@ -1,26 +1,32 @@
 ﻿import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
 import { Box, Container, Pagination, Typography } from "@mui/material";
 import { RecipeFilter } from "../components/RecipeFilter";
 import { RecipeCard } from "../components/RecipeCard";
 import { useRecipes } from "../hooks/useRecipes";
 import { getCategories, type Category } from "../api/categories";
 
+type Filters = {
+    mealType: string[];
+};
+
 const PER_PAGE = 12;
 
-export function CategoryDetail() {
-    const { slug } = useParams<{ slug: string }>();
+export function AllRecipes() {
     const { recipes, loading } = useRecipes();
     const [categories, setCategories] = useState<Category[]>([]);
+    const [filters, setFilters] = useState<Filters>({ mealType: [] });
     const [page, setPage] = useState(1);
-
-    const [filters, setFilters] = useState({
-        mealType: [] as string[],
-    });
 
     useEffect(() => {
         getCategories().then(setCategories);
     }, []);
+
+    // Map category name <-> slug
+    const nameToSlug = useMemo(() => {
+        const map = new Map<string, string>();
+        categories.forEach((c) => map.set(c.name, c.slug));
+        return map;
+    }, [categories]);
 
     const slugToName = useMemo(() => {
         const map = new Map<string, string>();
@@ -28,29 +34,26 @@ export function CategoryDetail() {
         return map;
     }, [categories]);
 
-    const inCategory = useMemo(
-        () => recipes.filter((r) => r.category === slug),
-        [recipes, slug]
-    );
-
+    // Apply filters
     const filtered = useMemo(() => {
-        let out = inCategory;
+        let out = recipes;
 
         if (filters.mealType.length > 0) {
-            out = out.filter((r) => filters.mealType.includes(r.category));
+            const wantedSlugs = filters.mealType
+                .map((n) => nameToSlug.get(n))
+                .filter(Boolean);
+            out = out.filter((r) => wantedSlugs.includes(r.category));
         }
 
         return out;
-    }, [inCategory, filters]);
+    }, [recipes, filters, nameToSlug]);
 
+    // Pagination
     const pageCount = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
     const start = (page - 1) * PER_PAGE;
     const current = filtered.slice(start, start + PER_PAGE);
 
-    const handleFilterChange = (
-        section: keyof typeof filters,
-        value: string
-    ) => {
+    const handleFilterChange = (section: keyof Filters, value: string) => {
         setPage(1);
         setFilters((prev) => {
             const exists = prev[section].includes(value);
@@ -63,14 +66,12 @@ export function CategoryDetail() {
         });
     };
 
-    const title = slugToName.get(slug || "") || slug;
-
     if (loading) return <p>Načítám...</p>;
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <Typography variant="h4" gutterBottom>
-                Recepty v kategorii: {title}
+                Všechny recepty
             </Typography>
 
             <Box
@@ -88,6 +89,7 @@ export function CategoryDetail() {
                     />
                 </Box>
 
+                {/* List */}
                 <Box sx={{ flex: 1 }}>
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
                         {current.map((r) => (

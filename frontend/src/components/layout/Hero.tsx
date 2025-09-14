@@ -1,5 +1,4 @@
-﻿import { Box, Typography, Button, Container } from "@mui/material";
-import { Link } from "react-router-dom";
+﻿import { Box, Typography, Container } from "@mui/material";
 
 export function Hero() {
     return (
@@ -7,14 +6,18 @@ export function Hero() {
             sx={{
                 position: "relative",
                 color: "white",
-                py: 12,
+                py: { xs: 10, md: 14 },
                 textAlign: "center",
-                backgroundImage: `url("https://res.cloudinary.com/demo/image/upload/w_1600,h_600,c_fill/food.jpg")`, // 🔥 replace with your Cloudinary URL
+                backgroundImage: `url("/cookbook.png")`, // from public folder
                 backgroundSize: "cover",
                 backgroundPosition: "center",
+                height: { xs: 250, md: 400 }, // ✅ adjust height for responsiveness
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
             }}
         >
-            {/* Overlay for better text readability */}
+            {/* Overlay for better readability */}
             <Box
                 sx={{
                     position: "absolute",
@@ -22,27 +25,27 @@ export function Hero() {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    bgcolor: "rgba(0,0,0,0.5)",
+                    bgcolor: "rgba(0,0,0,0.4)",
                 }}
             />
 
             {/* Content */}
             <Container sx={{ position: "relative", zIndex: 1 }}>
-                <Typography variant="h3" gutterBottom fontWeight="bold">
+                <Typography
+                    variant="h3"
+                    gutterBottom
+                    fontWeight="bold"
+                    sx={{ fontSize: { xs: "2rem", md: "3rem" } }}
+                >
                     Vítej v naší kuchařce
                 </Typography>
-                <Typography variant="h6" gutterBottom>
-                    Ukládej, organizuj, vychutnávej si všechny své oblíbené recepty na jednom místě
-                </Typography>
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    size="large"
-                    component={Link}
-                    to="/categories"
+                <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{ fontSize: { xs: "1rem", md: "1.25rem" } }}
                 >
-                    Prozkoumat recepty
-                </Button>
+                    Ukládej, organizuj a vychutnávej si své oblíbené recepty
+                </Typography>
             </Container>
         </Box>
     );

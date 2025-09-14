@@ -43,24 +43,25 @@ export function RecipeCard({ id, name, category, image, onDeleted }: RecipeCardP
 
     return (
         <>
-            <Card sx={{ position: "relative", maxWidth: 300 }}>
+            <Card
+                sx={{
+                    position: "relative",
+                    maxWidth: 300,
+                    "&:hover .actions": { opacity: 1 }, // 👈 key change
+                }}
+            >
                 {/* Recipe image */}
-                {image && (
-                    <CardMedia component="img" height="180" image={image} alt={name} />
-                )}
+                {image && <CardMedia component="img" height="180" image={image} alt={name} />}
 
                 {/* Content */}
                 <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                        {name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        {category}
-                    </Typography>
+                    <Typography variant="h6" gutterBottom>{name}</Typography>
+                    <Typography variant="body2" color="text.secondary">{category}</Typography>
                 </CardContent>
 
                 {/* Hover icons */}
                 <Box
+                    className="actions"
                     sx={{
                         position: "absolute",
                         top: 8,
@@ -69,25 +70,15 @@ export function RecipeCard({ id, name, category, image, onDeleted }: RecipeCardP
                         gap: 1,
                         opacity: 0,
                         transition: "opacity 0.3s",
-                        "&:hover": { opacity: 1 },
                     }}
                 >
                     {/* Edit */}
-                    <IconButton
-                        component={Link}
-                        to={`/edit/${id}`}
-                        size="small"
-                        sx={{ bgcolor: "white" }}
-                    >
+                    <IconButton component={Link} to={`/edit/${id}`} size="small" sx={{ bgcolor: "white" }}>
                         <EditIcon fontSize="small" />
                     </IconButton>
 
                     {/* Delete */}
-                    <IconButton
-                        size="small"
-                        sx={{ bgcolor: "white" }}
-                        onClick={() => setOpen(true)}
-                    >
+                    <IconButton size="small" sx={{ bgcolor: "white" }} onClick={() => setOpen(true)}>
                         <DeleteIcon fontSize="small" color="error" />
                     </IconButton>
                 </Box>

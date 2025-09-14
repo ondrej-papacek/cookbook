@@ -54,6 +54,17 @@ def search_recipes(q: str):
     results = []
     for doc in recipes_ref:
         data = doc.to_dict()
-        if q_lower in data["name"].lower():
+
+        name = data.get("name", "").lower()
+        tags = [t.lower() for t in data.get("tags", [])]
+        ingredients = [i.lower() for i in data.get("ingredients", [])]
+
+        if (
+                q_lower in name
+                or any(q_lower in tag for tag in tags)
+                or any(q_lower in ing for ing in ingredients)
+        ):
             results.append({**data, "id": doc.id})
+
     return results
+

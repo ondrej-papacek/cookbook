@@ -81,6 +81,26 @@ export function SearchBar() {
                     size="small"
                     variant="outlined"
                     fullWidth
+                    sx={{
+                        "& .MuiOutlinedInput-root": {
+                            color: "white",
+                            "& fieldset": {
+                                borderColor: "white",
+                            },
+                            "&:hover fieldset": {
+                                borderColor: "white",
+                            },
+                            "&.Mui-focused fieldset": {
+                                borderColor: "white",
+                            },
+                        },
+                        "& .MuiInputLabel-root": {
+                            color: "white",
+                            "&.Mui-focused": {
+                                color: "white",
+                            },
+                        },
+                    }}
                 />
             )}
         />

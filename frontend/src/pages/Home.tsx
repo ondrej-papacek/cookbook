@@ -1,70 +1,39 @@
-﻿import { useEffect, useState } from "react";
-import { Box, Container } from "@mui/material";
-import { RecipeFilter } from "../components/RecipeFilter";
+﻿import { useMemo } from "react";
+import { Box, Button, Container, Typography } from "@mui/material";
 import { RecipeCard } from "../components/RecipeCard";
-import { getRecipes } from "../api/recipes";
+import { Link } from "react-router-dom";
+import { useRecipes } from "../hooks/useRecipes";
 
 export function Home() {
-    const [filters, setFilters] = useState({
-        mealType: [] as string[],
-        diet: [] as string[],
-        season: [] as string[],
-        ingredient: [] as string[],
-    });
-    const [recipes, setRecipes] = useState<any[]>([]);
+    const { recipes, loading } = useRecipes();
 
-    useEffect(() => {
-        getRecipes().then(setRecipes);
-    }, []);
+    const random = useMemo(() => {
+        const arr = [...recipes];
+        arr.sort(() => 0.5 - Math.random());
+        return arr.slice(0, 8);
+    }, [recipes]);
 
-    const handleFilterChange = (section: keyof typeof filters, value: string) => {
-        setFilters((prev) => {
-            const alreadySelected = prev[section].includes(value);
-            return {
-                ...prev,
-                [section]: alreadySelected
-                    ? prev[section].filter((v) => v !== value)
-                    : [...prev[section], value],
-            };
-        });
-    };
+    if (loading) return <p>Načítám...</p>;
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
-            <Box
-                sx={{
-                    display: "flex",
-                    flexDirection: { xs: "column", md: "row" },
-                    gap: 4,
-                }}
-            >
-                {/* Sidebar */}
-                <Box sx={{ flex: { xs: "1 1 auto", md: "0 0 280px" } }}>
-                    <RecipeFilter
-                        filters={filters}
-                        onFilterChange={handleFilterChange}
-                    />
-                </Box>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                <Typography variant="h4">Náhodné recepty</Typography>
+                <Button variant="contained" component={Link} to="/recepty">
+                    Zobrazit všechny
+                </Button>
+            </Box>
 
-                {/* Main content */}
-                <Box
-                    sx={{
-                        flex: 1,
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: 2,
-                    }}
-                >
-                    {recipes.map((r) => (
-                        <RecipeCard
-                            key={r.id}
-                            id={r.id}
-                            name={r.name}
-                            category={r.category}
-                            image={r.image}
-                        />
-                    ))}
-                </Box>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+                {random.map((r) => (
+                    <RecipeCard
+                        key={r.id}
+                        id={r.id}
+                        name={r.name}
+                        category={r.category}
+                        image={r.image}
+                    />
+                ))}
             </Box>
         </Container>
     );

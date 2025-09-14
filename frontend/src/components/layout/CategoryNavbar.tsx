@@ -4,8 +4,11 @@ import { useEffect, useState } from "react";
 import { getCategories } from "../../api/categories";
 import type { Category } from "../../api/categories";
 
+type Props = {
+    onItemClick?: () => void;
+};
 
-export function CategoryNavbar() {
+export function CategoryNavbar({ onItemClick }: Props) {
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -24,24 +27,46 @@ export function CategoryNavbar() {
                 borderColor: "divider",
             }}
         >
-            <Container sx={{ display: "flex", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
+            <Container
+                sx={{
+                    display: "flex",
+                    gap: 2,
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                }}
+            >
                 {loading ? (
                     <Stack direction="row" alignItems="center" gap={1} sx={{ py: 1 }}>
                         <CircularProgress size={20} />
                     </Stack>
                 ) : (
-                    categories.map((cat) => (
+                    <>
+                        {categories.map((cat) => (
+                            <Button
+                                key={cat.id}
+                                component={Link}
+                                to={`/categories/${cat.slug}`}
+                                variant="text"
+                                color="inherit"
+                                onClick={onItemClick}
+                                sx={{ textTransform: "none" }}
+                            >
+                                {cat.name}
+                            </Button>
+                        ))}
+
+                        {/* Optional: link to the category manager */}
                         <Button
-                            key={cat.id}
                             component={Link}
-                            to={`/categories/${cat.slug}`}
-                            variant="text"
-                            color="inherit"
-                            sx={{ textTransform: "none" }}
+                            to="/categories"
+                            variant="outlined"
+                            size="small"
+                            onClick={onItemClick}
+                            sx={{ ml: "auto" }}
                         >
-                            {cat.name}
+                            Všechny kategorie
                         </Button>
-                    ))
+                    </>
                 )}
             </Container>
         </Box>
