@@ -8,15 +8,9 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import type { Recipe } from "../../api/recipes";
 
 const API_URL = import.meta.env.VITE_API_URL;
-
-export type Recipe = {
-    id: string;
-    name: string;
-    category: string;
-    image?: string; // Cloudinary URL
-};
 
 export function SearchBar() {
     const [options, setOptions] = useState<Recipe[]>([]);
@@ -43,6 +37,7 @@ export function SearchBar() {
         <Autocomplete<Recipe, false, false, true>
             freeSolo
             options={options}
+            noOptionsText="Žádné výsledky"
             getOptionLabel={(option) =>
                 typeof option === "string" ? option : option.name
             }
@@ -65,6 +60,12 @@ export function SearchBar() {
                         <Typography variant="caption" color="text.secondary">
                             {option.category}
                         </Typography>
+                        {(option.diet?.length || option.season) && (
+                            <Typography variant="caption" color="primary">
+                                {option.diet?.join(", ")}{" "}
+                                {option.season ? ` • ${option.season}` : ""}
+                            </Typography>
+                        )}
                     </Box>
                 </Box>
             )}

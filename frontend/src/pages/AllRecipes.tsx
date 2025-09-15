@@ -7,6 +7,8 @@ import { getCategories, type Category } from "../api/categories";
 
 type Filters = {
     mealType: string[];
+    diet: string[];
+    season: string[];
 };
 
 const PER_PAGE = 12;
@@ -14,19 +16,16 @@ const PER_PAGE = 12;
 export function AllRecipes() {
     const { recipes, loading } = useRecipes();
     const [categories, setCategories] = useState<Category[]>([]);
-    const [filters, setFilters] = useState<Filters>({ mealType: [] });
+    const [filters, setFilters] = useState<Filters>({
+        mealType: [],
+        diet: [],
+        season: [],
+    });
     const [page, setPage] = useState(1);
 
     useEffect(() => {
         getCategories().then(setCategories);
     }, []);
-
-    // Map category name <-> slug
-    const nameToSlug = useMemo(() => {
-        const map = new Map<string, string>();
-        categories.forEach((c) => map.set(c.name, c.slug));
-        return map;
-    }, [categories]);
 
     const slugToName = useMemo(() => {
         const map = new Map<string, string>();
@@ -39,16 +38,22 @@ export function AllRecipes() {
         let out = recipes;
 
         if (filters.mealType.length > 0) {
-            const wantedSlugs = filters.mealType
-                .map((n) => nameToSlug.get(n))
-                .filter(Boolean);
-            out = out.filter((r) => wantedSlugs.includes(r.category));
+            out = out.filter((r) => filters.mealType.includes(r.category));
+        }
+
+        if (filters.diet.length > 0) {
+            out = out.filter((r) =>
+                r.diet?.some((d) => filters.diet.includes(d))
+            );
+        }
+
+        if (filters.season.length > 0) {
+            out = out.filter((r) => filters.season.includes(r.season || ""));
         }
 
         return out;
-    }, [recipes, filters, nameToSlug]);
+    }, [recipes, filters]);
 
-    // Pagination
     const pageCount = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
     const start = (page - 1) * PER_PAGE;
     const current = filtered.slice(start, start + PER_PAGE);
@@ -81,15 +86,11 @@ export function AllRecipes() {
                     gap: 4,
                 }}
             >
-                {/* Sidebar */}
+
                 <Box sx={{ flex: { xs: "1 1 auto", md: "0 0 280px" } }}>
-                    <RecipeFilter
-                        filters={filters}
-                        onFilterChange={handleFilterChange}
-                    />
+                    <RecipeFilter filters={filters} onFilterChange={handleFilterChange} />
                 </Box>
 
-                {/* List */}
                 <Box sx={{ flex: 1 }}>
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
                         {current.map((r) => (

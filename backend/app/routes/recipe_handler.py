@@ -25,15 +25,16 @@ def create_recipe(recipe: Recipe):
     doc_ref.set(recipe.dict())
     return {"id": doc_ref.id, **recipe.dict()}
 
-@router.patch("/api/recipes/{recipe_id}", response_model=Recipe)
-def update_recipe(recipe_id: str, updated_data: Recipe):
+@router.patch("/api/recipes/{recipe_id}", response_model=RecipeWithID)
+def update_recipe(recipe_id: str, updated_data: dict):
     db = get_db()
     doc_ref = db.collection("recipes").document(recipe_id)
     doc = doc_ref.get()
     if not doc.exists:
         raise HTTPException(status_code=404, detail="Recipe not found")
-    doc_ref.update(updated_data.dict())
-    return updated_data
+    doc_ref.update(updated_data)
+    new_doc = doc_ref.get()
+    return {**new_doc.to_dict(), "id": new_doc.id}
 
 @router.delete("/api/recipes/{recipe_id}", status_code=204)
 def delete_recipe(recipe_id: str):

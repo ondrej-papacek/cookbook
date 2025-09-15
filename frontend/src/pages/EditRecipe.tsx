@@ -8,6 +8,9 @@ import { getCategories, type Category } from "../api/categories";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+const DIETS = ["Vegan", "Vegetarian", "Gluten-free", "Dairy-free"];
+const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
+
 export function EditRecipe() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -17,7 +20,6 @@ export function EditRecipe() {
 
     useEffect(() => {
         axios.get(`${API_URL}/api/recipes/${id}`).then((res) => setRecipe(res.data));
-
         getCategories().then(setCategories);
     }, [id]);
 
@@ -26,6 +28,16 @@ export function EditRecipe() {
             const url = await uploadImage(e.target.files[0]);
             setRecipe({ ...recipe, image: url });
         }
+    };
+
+    const toggleDiet = (d: string) => {
+        const current = recipe.diet || [];
+        setRecipe({
+            ...recipe,
+            diet: current.includes(d)
+                ? current.filter((x: string) => x !== d)
+                : [...current, d],
+        });
     };
 
     const handleSave = async () => {
@@ -50,7 +62,6 @@ export function EditRecipe() {
                 sx={{ mb: 2 }}
             />
 
-            {/* Category dropdown instead of free text */}
             <TextField
                 select
                 fullWidth
@@ -95,6 +106,38 @@ export function EditRecipe() {
                 <input type="file" hidden onChange={handleImage} />
             </Button>
             {recipe.image && <img src={recipe.image} alt="preview" width={200} />}
+
+            <Box sx={{ my: 2 }}>
+                <Typography variant="h6">Dieta</Typography>
+                {DIETS.map((d) => (
+                    <Box key={d}>
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={recipe.diet?.includes(d)}
+                                onChange={() => toggleDiet(d)}
+                            />
+                            {d}
+                        </label>
+                    </Box>
+                ))}
+            </Box>
+
+            <TextField
+                select
+                fullWidth
+                label="Sezóna"
+                value={recipe.season || ""}
+                onChange={(e) => setRecipe({ ...recipe, season: e.target.value })}
+                sx={{ my: 2 }}
+            >
+                <MenuItem value="">Žádná</MenuItem>
+                {SEASONS.map((s) => (
+                    <MenuItem key={s} value={s}>
+                        {s}
+                    </MenuItem>
+                ))}
+            </TextField>
 
             <Box mt={2}>
                 <Button variant="contained" color="primary" onClick={handleSave}>

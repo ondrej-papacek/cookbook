@@ -8,14 +8,22 @@ import { getCategories, type Category } from "../api/categories";
 
 const PER_PAGE = 12;
 
+type Filters = {
+    mealType: string[];
+    diet: string[];
+    season: string[];
+};
+
 export function CategoryDetail() {
     const { slug } = useParams<{ slug: string }>();
     const { recipes, loading } = useRecipes();
     const [categories, setCategories] = useState<Category[]>([]);
     const [page, setPage] = useState(1);
 
-    const [filters, setFilters] = useState({
-        mealType: [] as string[],
+    const [filters, setFilters] = useState<Filters>({
+        mealType: [],
+        diet: [],
+        season: [],
     });
 
     useEffect(() => {
@@ -40,6 +48,16 @@ export function CategoryDetail() {
             out = out.filter((r) => filters.mealType.includes(r.category));
         }
 
+        if (filters.diet.length > 0) {
+            out = out.filter((r) =>
+                r.diet?.some((d) => filters.diet.includes(d))
+            );
+        }
+
+        if (filters.season.length > 0) {
+            out = out.filter((r) => filters.season.includes(r.season || ""));
+        }
+
         return out;
     }, [inCategory, filters]);
 
@@ -47,10 +65,7 @@ export function CategoryDetail() {
     const start = (page - 1) * PER_PAGE;
     const current = filtered.slice(start, start + PER_PAGE);
 
-    const handleFilterChange = (
-        section: keyof typeof filters,
-        value: string
-    ) => {
+    const handleFilterChange = (section: keyof Filters, value: string) => {
         setPage(1);
         setFilters((prev) => {
             const exists = prev[section].includes(value);
@@ -80,12 +95,8 @@ export function CategoryDetail() {
                     gap: 4,
                 }}
             >
-                {/* Sidebar */}
                 <Box sx={{ flex: { xs: "1 1 auto", md: "0 0 280px" } }}>
-                    <RecipeFilter
-                        filters={filters}
-                        onFilterChange={handleFilterChange}
-                    />
+                    <RecipeFilter filters={filters} onFilterChange={handleFilterChange} />
                 </Box>
 
                 <Box sx={{ flex: 1 }}>

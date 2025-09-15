@@ -1,18 +1,5 @@
 ﻿import { useEffect, useState } from "react";
-import { getRecipes } from "../api/recipes";
-
-
-export type Recipe = {
-    id: string;
-    name: string;
-    category: string;
-    ingredients: string[];
-    steps: string[];
-    tags: string[];
-    image?: string;
-    diet?: string[];
-    season?: string;
-};
+import { getRecipes, type Recipe } from "../api/recipes";
 
 export function useRecipes() {
     const [recipes, setRecipes] = useState<Recipe[]>([]);

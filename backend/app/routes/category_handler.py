@@ -1,7 +1,8 @@
-﻿from fastapi import APIRouter, HTTPException
+﻿from fastapi import APIRouter, HTTPException, Body
 from app.utils.firebase import get_db
 from app.models.category import Category
 from firebase_admin import firestore as fb_fs
+
 
 router = APIRouter()
 
@@ -52,7 +53,7 @@ def delete_category(slug: str):
     return
 
 @router.patch("/api/categories/reorder", status_code=204)
-def reorder_categories(items: list[dict]):
+def reorder_categories(items: list[dict] = Body(...)):
     """
     items: [{ "slug": "snidane", "order": 1 }, ...]
     """

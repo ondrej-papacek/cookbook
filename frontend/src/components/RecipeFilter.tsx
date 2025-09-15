@@ -3,7 +3,7 @@ import { Checkbox } from "./UI/Checkbox";
 import { useEffect, useState } from "react";
 import { getCategories, type Category } from "../api/categories";
 
-type Sections = "mealType";
+type Sections = "mealType" | "diet" | "season";
 
 export type RecipeFilterProps = {
     filters: Record<Sections, string[]>;
@@ -11,7 +11,14 @@ export type RecipeFilterProps = {
     hiddenSections?: Sections[];
 };
 
-export function RecipeFilter({ filters, onFilterChange, hiddenSections = [] }: RecipeFilterProps) {
+const DIETS = ["Vegan", "Vegetarian", "Gluten-free", "Dairy-free"];
+const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
+
+export function RecipeFilter({
+                                 filters,
+                                 onFilterChange,
+                                 hiddenSections = [],
+                             }: RecipeFilterProps) {
     const [categories, setCategories] = useState<Category[]>([]);
 
     useEffect(() => {
@@ -19,7 +26,6 @@ export function RecipeFilter({ filters, onFilterChange, hiddenSections = [] }: R
     }, []);
 
     const isHidden = (s: Sections) => hiddenSections.includes(s);
-
     const rootCats = categories.filter((c) => !c.parentId);
 
     return (
@@ -31,7 +37,11 @@ export function RecipeFilter({ filters, onFilterChange, hiddenSections = [] }: R
             {!isHidden("mealType") &&
                 rootCats.map((parent) => (
                     <Box key={parent.id} sx={{ mb: 2 }}>
-                        <Typography fontWeight="bold">{parent.name}</Typography>
+                        <Checkbox
+                            label={parent.name}
+                            checked={filters.mealType.includes(parent.slug)}
+                            onChange={() => onFilterChange("mealType", parent.slug)}
+                        />
 
                         {categories
                             .filter((c) => c.parentId === parent.id)
@@ -48,6 +58,36 @@ export function RecipeFilter({ filters, onFilterChange, hiddenSections = [] }: R
                         <Divider sx={{ mt: 1 }} />
                     </Box>
                 ))}
+
+            {!isHidden("diet") && (
+                <Box sx={{ mb: 2 }}>
+                    <Typography fontWeight="bold">Dieta</Typography>
+                    {DIETS.map((d) => (
+                        <Checkbox
+                            key={d}
+                            label={d}
+                            checked={filters.diet.includes(d)}
+                            onChange={() => onFilterChange("diet", d)}
+                        />
+                    ))}
+                    <Divider sx={{ mt: 1 }} />
+                </Box>
+            )}
+
+            {!isHidden("season") && (
+                <Box sx={{ mb: 2 }}>
+                    <Typography fontWeight="bold">Sezóna</Typography>
+                    {SEASONS.map((s) => (
+                        <Checkbox
+                            key={s}
+                            label={s}
+                            checked={filters.season.includes(s)}
+                            onChange={() => onFilterChange("season", s)}
+                        />
+                    ))}
+                    <Divider sx={{ mt: 1 }} />
+                </Box>
+            )}
         </Box>
     );
 }
