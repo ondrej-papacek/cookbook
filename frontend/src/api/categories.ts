@@ -39,11 +39,9 @@ export async function deleteCategory(id: string): Promise<void> {
 }
 
 export async function reorderCategories(
-    items: { slug: string; order: number }[]
+    items: { id: string; order: number }[]
 ): Promise<void> {
-    await axios.patch(
-        `${API_URL}/api/categories/reorder`,
-        { items },
-        { headers: { "Content-Type": "application/json" } }
-    );
+    await axios.patch(`${API_URL}/api/categories/reorder`, items, {
+        headers: { "Content-Type": "application/json" },
+    });
 }

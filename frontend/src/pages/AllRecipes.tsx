@@ -33,7 +33,6 @@ export function AllRecipes() {
         return map;
     }, [categories]);
 
-    // Apply filters
     const filtered = useMemo(() => {
         let out = recipes;
 

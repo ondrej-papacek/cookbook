@@ -2,10 +2,8 @@
 import { Box, TextField, Typography, MenuItem } from "@mui/material";
 import { Button } from "../components/UI/Button";
 import { uploadImage } from "../services/cloudinary";
-import axios from "axios";
 import { getCategories, type Category } from "../api/categories";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { createRecipe } from "../api/recipes";
 
 const DIETS = ["Vegan", "Vegetarian", "Gluten-free", "Dairy-free"];
 const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
@@ -16,7 +14,7 @@ export function AddRecipe() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [ingredients, setIngredients] = useState("");
     const [steps, setSteps] = useState("");
-    const [image, setImage] = useState<string | null>(null);
+    const [image, setImage] = useState<string | undefined>(undefined);
     const [diet, setDiet] = useState<string[]>([]);
     const [season, setSeason] = useState("");
 
@@ -39,7 +37,7 @@ export function AddRecipe() {
 
     const handleSubmit = async () => {
         try {
-            await axios.post(`${API_URL}/api/recipes`, {
+            await createRecipe({
                 name,
                 category,
                 ingredients: ingredients.split("\n"),
@@ -54,7 +52,7 @@ export function AddRecipe() {
             setCategory("");
             setIngredients("");
             setSteps("");
-            setImage(null);
+            setImage(undefined);
             setDiet([]);
             setSeason("");
         } catch (err) {

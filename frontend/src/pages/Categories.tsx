@@ -84,7 +84,7 @@ export function Categories() {
 
     const handleUpdate = async () => {
         if (!editing) return;
-        await updateCategory(editing.slug, {
+        await updateCategory(editing.id, {
             name: editing.name,
             description: editing.description,
         });
@@ -92,9 +92,9 @@ export function Categories() {
         await refresh();
     };
 
-    const handleDelete = async (slug: string) => {
+    const handleDelete = async (id: string) => {
         if (!confirm("Opravdu smazat kategorii?")) return;
-        await deleteCategory(slug);
+        await deleteCategory(id);
         await refresh();
     };
 
@@ -107,14 +107,14 @@ export function Categories() {
 
         setCategories((prev) =>
             prev.map((cat) => {
-                const i = items.findIndex((c) => c.slug === cat.slug);
+                const i = items.findIndex((c) => c.id === cat.id);
                 return i !== -1 ? { ...cat, order: i } : cat;
             })
         );
 
         try {
             await reorderCategories(
-                items.map((cat, index) => ({ slug: cat.slug, order: index }))
+                items.map((cat, index) => ({ id: cat.id, order: index }))
             );
         } catch (err) {
             console.error("Reorder failed", err);

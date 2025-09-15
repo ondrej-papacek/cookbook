@@ -6,11 +6,8 @@ import {
     Box,
     Typography,
 } from "@mui/material";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import type { Recipe } from "../../api/recipes";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { searchRecipes, type Recipe } from "../../api/recipes";
 
 export function SearchBar() {
     const [options, setOptions] = useState<Recipe[]>([]);
@@ -24,9 +21,8 @@ export function SearchBar() {
         }
 
         const delay = setTimeout(() => {
-            axios
-                .get(`${API_URL}/api/recipes/search?q=${input}`)
-                .then((res) => setOptions(res.data))
+            searchRecipes(input)
+                .then(setOptions)
                 .catch(() => setOptions([]));
         }, 300);
 

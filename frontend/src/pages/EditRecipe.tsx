@@ -2,11 +2,9 @@
 import { Box, TextField, Typography, MenuItem } from "@mui/material";
 import { Button } from "../components/UI/Button";
 import { uploadImage } from "../services/cloudinary";
-import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { getCategories, type Category } from "../api/categories";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { getRecipe, updateRecipe } from "../api/recipes";
 
 const DIETS = ["Vegan", "Vegetarian", "Gluten-free", "Dairy-free"];
 const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
@@ -19,7 +17,8 @@ export function EditRecipe() {
     const [categories, setCategories] = useState<Category[]>([]);
 
     useEffect(() => {
-        axios.get(`${API_URL}/api/recipes/${id}`).then((res) => setRecipe(res.data));
+        if (!id) return;
+        getRecipe(id).then(setRecipe);
         getCategories().then(setCategories);
     }, [id]);
 
@@ -41,7 +40,8 @@ export function EditRecipe() {
     };
 
     const handleSave = async () => {
-        await axios.patch(`${API_URL}/api/recipes/${id}`, recipe);
+        if (!id) return;
+        await updateRecipe(id, recipe);
         alert("Recept byl aktualizován!");
         navigate(`/recipes/${id}`);
     };

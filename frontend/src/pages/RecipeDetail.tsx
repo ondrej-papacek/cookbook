@@ -1,10 +1,8 @@
 ﻿import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Box, Typography, List, ListItem } from "@mui/material";
-import axios from "axios";
 import { getCategories, type Category } from "../api/categories";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { getRecipe } from "../api/recipes";
 
 export function RecipeDetail() {
     const { id } = useParams();
@@ -12,9 +10,8 @@ export function RecipeDetail() {
     const [categories, setCategories] = useState<Category[]>([]);
 
     useEffect(() => {
-        axios
-            .get(`${API_URL}/api/recipes/${id}`)
-            .then((res) => setRecipe(res.data));
+        if (!id) return;
+        getRecipe(id).then(setRecipe);
     }, [id]);
 
     useEffect(() => {
