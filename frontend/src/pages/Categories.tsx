@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import {
     Box,
     Typography,
@@ -9,6 +9,7 @@ import {
     Button,
     Stack,
     MenuItem,
+    Divider,
 } from "@mui/material";
 import { Delete, Edit, DragIndicator } from "@mui/icons-material";
 import {
@@ -28,8 +29,8 @@ import {
 } from "@hello-pangea/dnd";
 
 
-function slugifyWithParent(text: string, parentSlug?: string): string {
-    const base = text
+function slugify(text: string): string {
+    return text
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -37,7 +38,11 @@ function slugifyWithParent(text: string, parentSlug?: string): string {
         .replace(/[^a-z0-9-]/g, "")
         .replace(/--+/g, "-")
         .replace(/^-+|-+$/g, "");
-    return parentSlug ? `${parentSlug}-${base}` : base;
+}
+
+function slugifyWithParent(name: string, parentSlug?: string) {
+    const s = slugify(name);
+    return parentSlug ? `${parentSlug}-${s}` : s;
 }
 
 export function Categories() {
@@ -54,6 +59,10 @@ export function Categories() {
     useEffect(() => {
         refresh();
     }, []);
+
+    const roots = useMemo(() => categories.filter((c) => !c.parentId), [categories]);
+    const childrenOf = (parent: string) =>
+        categories.filter((c) => c.parentId === parent);
 
     const handleAdd = async () => {
         if (!newName.trim()) return;
@@ -92,19 +101,21 @@ export function Categories() {
     const handleDragEnd = async (result: DropResult) => {
         if (!result.destination) return;
 
-        const rootCats = categories.filter((c) => !c.parentId);
-        const items = Array.from(rootCats);
+        const items = Array.from(roots);
         const [moved] = items.splice(result.source.index, 1);
         items.splice(result.destination.index, 0, moved);
 
-        const prev = categories;
-        setCategories(prev.map((cat) => {
-            const i = items.findIndex((c) => c.slug === cat.slug);
-            return i !== -1 ? { ...cat, order: i } : cat;
-        }));
+        setCategories((prev) =>
+            prev.map((cat) => {
+                const i = items.findIndex((c) => c.slug === cat.slug);
+                return i !== -1 ? { ...cat, order: i } : cat;
+            })
+        );
 
         try {
-            await reorderCategories(items.map((cat, index) => ({ slug: cat.slug, order: index })));
+            await reorderCategories(
+                items.map((cat, index) => ({ slug: cat.slug, order: index }))
+            );
         } catch (err) {
             console.error("Reorder failed", err);
             alert("Nepodařilo se změnit pořadí kategorií.");
@@ -113,12 +124,12 @@ export function Categories() {
     };
 
     return (
-        <Box sx={{ maxWidth: 600, mx: "auto" }}>
+        <Box sx={{ maxWidth: 700, mx: "auto" }}>
             <Typography variant="h4" gutterBottom>
                 Kategorie receptů
             </Typography>
 
-            <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 3 }}>
                 <TextField
                     label="Název"
                     size="small"
@@ -130,19 +141,15 @@ export function Categories() {
                     label="Nadkategorie"
                     size="small"
                     value={parentId ?? ""}
-                    onChange={(e) =>
-                        setParentId(e.target.value || null)
-                    }
-                    sx={{ minWidth: 150 }}
+                    onChange={(e) => setParentId(e.target.value || null)}
+                    sx={{ minWidth: 200 }}
                 >
                     <MenuItem value="">Žádná</MenuItem>
-                    {categories
-                        .filter((c) => !c.parentId)
-                        .map((cat) => (
-                            <MenuItem key={cat.id} value={cat.id}>
-                                {cat.name}
-                            </MenuItem>
-                        ))}
+                    {roots.map((cat) => (
+                        <MenuItem key={cat.id} value={cat.id}>
+                            {cat.name}
+                        </MenuItem>
+                    ))}
                 </TextField>
                 <Button variant="contained" onClick={handleAdd}>
                     Přidat
@@ -150,56 +157,78 @@ export function Categories() {
             </Stack>
 
             <DragDropContext onDragEnd={handleDragEnd}>
-                <Droppable droppableId="categories">
+                <Droppable droppableId="root-categories">
                     {(provided) => (
-                        <List
-                            {...provided.droppableProps}
-                            ref={provided.innerRef}
-                        >
-                            {categories
-                                .filter((c) => !c.parentId)
-                                .map((cat, index) => (
-                                    <Draggable
-                                        key={cat.id}
-                                        draggableId={cat.id}
-                                        index={index}
-                                    >
-                                        {(provided) => (
-                                            <ListItem
-                                                ref={provided.innerRef}
-                                                {...provided.draggableProps}
-                                                secondaryAction={
-                                                    <>
-                                                        <IconButton
-                                                            edge="end"
-                                                            onClick={() =>
-                                                                setEditing(cat)
-                                                            }
-                                                        >
-                                                            <Edit />
-                                                        </IconButton>
-                                                        <IconButton
-                                                            edge="end"
-                                                            onClick={() =>
-                                                                handleDelete(cat.slug)
-                                                            }
-                                                        >
-                                                            <Delete color="error" />
-                                                        </IconButton>
-                                                    </>
-                                                }
-                                            >
-                                                <Box
-                                                    {...provided.dragHandleProps}
-                                                    sx={{ mr: 1, cursor: "grab" }}
+                        <List {...provided.droppableProps} ref={provided.innerRef}>
+                            {roots.map((root, index) => {
+                                const kids = childrenOf(root.id);
+                                return (
+                                    <Draggable key={root.id} draggableId={root.id} index={index}>
+                                        {(drag) => (
+                                            <Box ref={drag.innerRef}>
+                                                <ListItem
+                                                    {...drag.draggableProps}
+                                                    secondaryAction={
+                                                        <>
+                                                            <IconButton edge="end" onClick={() => setEditing(root)}>
+                                                                <Edit />
+                                                            </IconButton>
+                                                            <IconButton
+                                                                edge="end"
+                                                                onClick={() => handleDelete(root.slug)}
+                                                            >
+                                                                <Delete color="error" />
+                                                            </IconButton>
+                                                        </>
+                                                    }
                                                 >
-                                                    <DragIndicator />
-                                                </Box>
-                                                <Typography>{cat.name}</Typography>
-                                            </ListItem>
+                                                    <Box
+                                                        {...drag.dragHandleProps}
+                                                        sx={{ mr: 1, cursor: "grab" }}
+                                                    >
+                                                        <DragIndicator />
+                                                    </Box>
+                                                    <Typography sx={{ fontWeight: 600 }}>{root.name}</Typography>
+                                                </ListItem>
+
+                                                {kids.length > 0 && (
+                                                    <List sx={{ pl: 6 }}>
+                                                        {kids.map((child) => (
+                                                            <ListItem
+                                                                key={child.id}
+                                                                secondaryAction={
+                                                                    <>
+                                                                        <IconButton
+                                                                            edge="end"
+                                                                            onClick={() => setEditing(child)}
+                                                                            size="small"
+                                                                        >
+                                                                            <Edit fontSize="small" />
+                                                                        </IconButton>
+                                                                        <IconButton
+                                                                            edge="end"
+                                                                            onClick={() => handleDelete(child.slug)}
+                                                                            size="small"
+                                                                        >
+                                                                            <Delete color="error" fontSize="small" />
+                                                                        </IconButton>
+                                                                    </>
+                                                                }
+                                                            >
+                                                                <Typography color="text.secondary">
+                                                                    {child.name}
+                                                                </Typography>
+                                                            </ListItem>
+                                                        ))}
+                                                    </List>
+                                                )}
+
+                                                <Divider />
+                                            </Box>
                                         )}
                                     </Draggable>
-                                ))}
+                                );
+                            })}
                             {provided.placeholder}
                         </List>
                     )}
@@ -213,9 +242,7 @@ export function Categories() {
                         fullWidth
                         label="Název"
                         value={editing.name}
-                        onChange={(e) =>
-                            setEditing({ ...editing, name: e.target.value })
-                        }
+                        onChange={(e) => setEditing({ ...editing, name: e.target.value })}
                         sx={{ mb: 2 }}
                     />
                     <Button variant="contained" onClick={handleUpdate}>
