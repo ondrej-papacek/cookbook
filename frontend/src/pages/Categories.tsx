@@ -28,8 +28,8 @@ import {
 } from "@hello-pangea/dnd";
 
 
-function slugify(text: string): string {
-    return text
+function slugifyWithParent(text: string, parentSlug?: string): string {
+    const base = text
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -37,6 +37,7 @@ function slugify(text: string): string {
         .replace(/[^a-z0-9-]/g, "")
         .replace(/--+/g, "-")
         .replace(/^-+|-+$/g, "");
+    return parentSlug ? `${parentSlug}-${base}` : base;
 }
 
 export function Categories() {
@@ -57,9 +58,13 @@ export function Categories() {
     const handleAdd = async () => {
         if (!newName.trim()) return;
 
+        const parentSlug = parentId
+            ? categories.find((c) => c.id === parentId)?.slug
+            : undefined;
+
         await createCategory({
             name: newName,
-            slug: slugify(newName),
+            slug: slugifyWithParent(newName, parentSlug),
             parentId,
         });
 

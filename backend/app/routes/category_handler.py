@@ -27,15 +27,14 @@ def create_category(cat: Category):
         .limit(1).stream()
     )
     next_order = (last[0].to_dict().get("order", 0) if last else 0) + 1
+
     data = cat.dict()
     if data.get("order") is None:
         data["order"] = next_order
 
-    doc_ref = db.collection("categories").document(cat.slug)
-    if doc_ref.get().exists:
-        raise HTTPException(status_code=409, detail="Category with this slug already exists")
-
+    doc_ref = db.collection("categories").document()
     doc_ref.set(data)
+
     return {"id": doc_ref.id, **data}
 
 @router.patch("/api/categories/{slug}")

@@ -27,15 +27,15 @@ export async function createCategory(data: {
 }
 
 export async function updateCategory(
-    slug: string,
+    id: string,
     data: Partial<Omit<Category, "id" | "slug">>
 ): Promise<Category> {
-    const res = await axios.patch(`${API_URL}/api/categories/${slug}`, data);
+    const res = await axios.patch(`${API_URL}/api/categories/${id}`, data);
     return res.data;
 }
 
-export async function deleteCategory(slug: string): Promise<void> {
-    await axios.delete(`${API_URL}/api/categories/${slug}`);
+export async function deleteCategory(id: string): Promise<void> {
+    await axios.delete(`${API_URL}/api/categories/${id}`);
 }
 
 export async function reorderCategories(
