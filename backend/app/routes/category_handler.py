@@ -1,10 +1,15 @@
-﻿from fastapi import APIRouter, HTTPException, Body
+﻿from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import List
 from app.utils.firebase import get_db
 from app.models.category import Category
 from firebase_admin import firestore as fb_fs
 
-
 router = APIRouter()
+
+class ReorderItem(BaseModel):
+    slug: str
+    order: int
 
 @router.get("/api/categories")
 def get_categories():
@@ -53,16 +58,13 @@ def delete_category(slug: str):
     return
 
 @router.patch("/api/categories/reorder", status_code=204)
-def reorder_categories(items: list[dict] = Body(...)):
+def reorder_categories(items: List[ReorderItem]):
     """
     items: [{ "slug": "snidane", "order": 1 }, ...]
     """
     db = get_db()
     batch = db.batch()
     for it in items:
-        slug, order = it.get("slug"), it.get("order")
-        if slug is None or order is None:
-            continue
-        batch.update(db.collection("categories").document(slug), {"order": order})
+        batch.update(db.collection("categories").document(it.slug), {"order": it.order})
     batch.commit()
     return

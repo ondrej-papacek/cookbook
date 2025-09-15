@@ -99,9 +99,15 @@ export function Categories() {
             })
         );
 
-        await reorderCategories(
-            items.map((cat, index) => ({ slug: cat.slug, order: index }))
-        );
+        try {
+            await reorderCategories(
+                items.map((cat, index) => ({ slug: cat.slug, order: index }))
+            );
+        } catch (err) {
+            console.error("Reorder failed", err);
+            alert("Nepodařilo se změnit pořadí kategorií.");
+            await refresh();
+        }
     };
 
     return (
@@ -110,7 +116,6 @@ export function Categories() {
                 Kategorie receptů
             </Typography>
 
-            {/* Add new category */}
             <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
                 <TextField
                     label="Název"
@@ -142,7 +147,6 @@ export function Categories() {
                 </Button>
             </Stack>
 
-            {/* Drag & Drop root categories */}
             <DragDropContext onDragEnd={handleDragEnd}>
                 <Droppable droppableId="categories">
                     {(provided) => (
@@ -200,7 +204,6 @@ export function Categories() {
                 </Droppable>
             </DragDropContext>
 
-            {/* Edit inline form */}
             {editing && (
                 <Box sx={{ mt: 3 }}>
                     <Typography variant="h6">Upravit kategorii</Typography>
