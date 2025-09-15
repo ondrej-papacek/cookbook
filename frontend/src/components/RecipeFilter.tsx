@@ -3,32 +3,6 @@ import { Checkbox } from "./UI/Checkbox";
 import { useEffect, useState } from "react";
 import { getCategories, type Category } from "../api/categories";
 
-type FilterSectionProps = {
-    title: string;
-    options: string[];
-    selected: string[];
-    onChange: (option: string) => void;
-};
-
-function FilterSection({ title, options, selected, onChange }: FilterSectionProps) {
-    return (
-        <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                {title}
-            </Typography>
-            {options.map((opt) => (
-                <Checkbox
-                    key={opt}
-                    label={opt}
-                    checked={selected.includes(opt)}
-                    onChange={() => onChange(opt)}
-                />
-            ))}
-            <Divider sx={{ mt: 2 }} />
-        </Box>
-    );
-}
-
 type Sections = "mealType";
 
 export type RecipeFilterProps = {
@@ -46,21 +20,34 @@ export function RecipeFilter({ filters, onFilterChange, hiddenSections = [] }: R
 
     const isHidden = (s: Sections) => hiddenSections.includes(s);
 
+    const rootCats = categories.filter((c) => !c.parentId);
+
     return (
         <Box sx={{ p: 2, width: 250 }}>
             <Typography variant="h6" gutterBottom>
                 Filtrovat recepty
             </Typography>
 
-            {/* Categories from Firestore */}
-            {!isHidden("mealType") && (
-                <FilterSection
-                    title="Kategorie jídel"
-                    options={categories.map((c) => c.name)}
-                    selected={filters.mealType}
-                    onChange={(v) => onFilterChange("mealType", v)}
-                />
-            )}
+            {!isHidden("mealType") &&
+                rootCats.map((parent) => (
+                    <Box key={parent.id} sx={{ mb: 2 }}>
+                        <Typography fontWeight="bold">{parent.name}</Typography>
+
+                        {categories
+                            .filter((c) => c.parentId === parent.id)
+                            .map((child) => (
+                                <Checkbox
+                                    key={child.id}
+                                    label={child.name}
+                                    checked={filters.mealType.includes(child.slug)}
+                                    onChange={() => onFilterChange("mealType", child.slug)}
+                                    sx={{ pl: 2 }}
+                                />
+                            ))}
+
+                        <Divider sx={{ mt: 1 }} />
+                    </Box>
+                ))}
         </Box>
     );
 }

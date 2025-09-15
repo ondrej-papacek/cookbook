@@ -8,6 +8,7 @@ import {
     TextField,
     Button,
     Stack,
+    MenuItem,
 } from "@mui/material";
 import { Delete, Edit, DragIndicator } from "@mui/icons-material";
 import {
@@ -27,10 +28,21 @@ import {
 } from "@hello-pangea/dnd";
 
 
+function slugify(text: string): string {
+    return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "")
+        .replace(/--+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
+
 export function Categories() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [newName, setNewName] = useState("");
-    const [newSlug, setNewSlug] = useState("");
+    const [parentId, setParentId] = useState<string | null>(null);
     const [editing, setEditing] = useState<Category | null>(null);
 
     const refresh = async () => {
@@ -43,10 +55,16 @@ export function Categories() {
     }, []);
 
     const handleAdd = async () => {
-        if (!newName || !newSlug) return;
-        await createCategory({ name: newName, slug: newSlug });
+        if (!newName.trim()) return;
+
+        await createCategory({
+            name: newName,
+            slug: slugify(newName),
+            parentId,
+        });
+
         setNewName("");
-        setNewSlug("");
+        setParentId(null);
         await refresh();
     };
 
@@ -69,14 +87,18 @@ export function Categories() {
     const handleDragEnd = async (result: DropResult) => {
         if (!result.destination) return;
 
-        const items = Array.from(categories);
+        const rootCats = categories.filter((c) => !c.parentId);
+        const items = Array.from(rootCats);
         const [moved] = items.splice(result.source.index, 1);
         items.splice(result.destination.index, 0, moved);
 
-        // Update local state immediately
-        setCategories(items);
+        setCategories((prev) =>
+            prev.map((cat) => {
+                const newOrder = items.findIndex((c) => c.slug === cat.slug);
+                return newOrder !== -1 ? { ...cat, order: newOrder } : cat;
+            })
+        );
 
-        // Persist new order to backend
         await reorderCategories(
             items.map((cat, index) => ({ slug: cat.slug, order: index }))
         );
@@ -97,17 +119,30 @@ export function Categories() {
                     onChange={(e) => setNewName(e.target.value)}
                 />
                 <TextField
-                    label="Slug"
+                    select
+                    label="Rodič"
                     size="small"
-                    value={newSlug}
-                    onChange={(e) => setNewSlug(e.target.value)}
-                />
+                    value={parentId ?? ""}
+                    onChange={(e) =>
+                        setParentId(e.target.value || null)
+                    }
+                    sx={{ minWidth: 150 }}
+                >
+                    <MenuItem value="">Žádný (root)</MenuItem>
+                    {categories
+                        .filter((c) => !c.parentId)
+                        .map((cat) => (
+                            <MenuItem key={cat.id} value={cat.id}>
+                                {cat.name}
+                            </MenuItem>
+                        ))}
+                </TextField>
                 <Button variant="contained" onClick={handleAdd}>
                     Přidat
                 </Button>
             </Stack>
 
-            {/* Drag & Drop list */}
+            {/* Drag & Drop root categories */}
             <DragDropContext onDragEnd={handleDragEnd}>
                 <Droppable droppableId="categories">
                     {(provided) => (
@@ -115,48 +150,50 @@ export function Categories() {
                             {...provided.droppableProps}
                             ref={provided.innerRef}
                         >
-                            {categories.map((cat, index) => (
-                                <Draggable
-                                    key={cat.id}
-                                    draggableId={cat.id}
-                                    index={index}
-                                >
-                                    {(provided) => (
-                                        <ListItem
-                                            ref={provided.innerRef}
-                                            {...provided.draggableProps}
-                                            secondaryAction={
-                                                <>
-                                                    <IconButton
-                                                        edge="end"
-                                                        onClick={() =>
-                                                            setEditing(cat)
-                                                        }
-                                                    >
-                                                        <Edit />
-                                                    </IconButton>
-                                                    <IconButton
-                                                        edge="end"
-                                                        onClick={() =>
-                                                            handleDelete(cat.slug)
-                                                        }
-                                                    >
-                                                        <Delete color="error" />
-                                                    </IconButton>
-                                                </>
-                                            }
-                                        >
-                                            <Box
-                                                {...provided.dragHandleProps}
-                                                sx={{ mr: 1, cursor: "grab" }}
+                            {categories
+                                .filter((c) => !c.parentId)
+                                .map((cat, index) => (
+                                    <Draggable
+                                        key={cat.id}
+                                        draggableId={cat.id}
+                                        index={index}
+                                    >
+                                        {(provided) => (
+                                            <ListItem
+                                                ref={provided.innerRef}
+                                                {...provided.draggableProps}
+                                                secondaryAction={
+                                                    <>
+                                                        <IconButton
+                                                            edge="end"
+                                                            onClick={() =>
+                                                                setEditing(cat)
+                                                            }
+                                                        >
+                                                            <Edit />
+                                                        </IconButton>
+                                                        <IconButton
+                                                            edge="end"
+                                                            onClick={() =>
+                                                                handleDelete(cat.slug)
+                                                            }
+                                                        >
+                                                            <Delete color="error" />
+                                                        </IconButton>
+                                                    </>
+                                                }
                                             >
-                                                <DragIndicator />
-                                            </Box>
-                                            <Typography>{cat.name}</Typography>
-                                        </ListItem>
-                                    )}
-                                </Draggable>
-                            ))}
+                                                <Box
+                                                    {...provided.dragHandleProps}
+                                                    sx={{ mr: 1, cursor: "grab" }}
+                                                >
+                                                    <DragIndicator />
+                                                </Box>
+                                                <Typography>{cat.name}</Typography>
+                                            </ListItem>
+                                        )}
+                                    </Draggable>
+                                ))}
                             {provided.placeholder}
                         </List>
                     )}

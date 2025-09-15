@@ -8,6 +8,7 @@ export type Category = {
     slug: string;
     description?: string;
     order?: number;
+    parentId?: string | null;
 };
 
 export async function getCategories(): Promise<Category[]> {
@@ -19,6 +20,7 @@ export async function createCategory(data: {
     name: string;
     slug: string;
     description?: string;
+    parentId?: string | null;
 }): Promise<Category> {
     const res = await axios.post(`${API_URL}/api/categories`, data);
     return res.data;

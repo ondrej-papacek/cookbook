@@ -55,7 +55,6 @@ export function CategoryNavbar({ onItemClick }: Props) {
                             </Button>
                         ))}
 
-                        {/* Optional: link to the category manager */}
                         <Button
                             component={Link}
                             to="/categories"

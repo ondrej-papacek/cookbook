@@ -6,3 +6,4 @@ class Category(BaseModel):
     slug: str
     description: Optional[str] = None
     order: Optional[int] = None
+    parentId: Optional[str] = None

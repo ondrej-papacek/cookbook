@@ -6,18 +6,17 @@ export function Hero() {
             sx={{
                 position: "relative",
                 color: "white",
-                py: { xs: 10, md: 14 },
                 textAlign: "center",
-                backgroundImage: `url("/cookbook.png")`, // from public folder
+                backgroundImage: `url("/cookbook.png")`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
-                height: { xs: 250, md: 400 }, // ✅ adjust height for responsiveness
+                height: "60vh",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                mt: "-64px",
             }}
         >
-            {/* Overlay for better readability */}
             <Box
                 sx={{
                     position: "absolute",
@@ -29,7 +28,6 @@ export function Hero() {
                 }}
             />
 
-            {/* Content */}
             <Container sx={{ position: "relative", zIndex: 1 }}>
                 <Typography
                     variant="h3"
