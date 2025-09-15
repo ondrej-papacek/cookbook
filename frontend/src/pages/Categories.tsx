@@ -120,7 +120,7 @@ export function Categories() {
                 />
                 <TextField
                     select
-                    label="Rodič"
+                    label="Nadkategorie"
                     size="small"
                     value={parentId ?? ""}
                     onChange={(e) =>
@@ -128,7 +128,7 @@ export function Categories() {
                     }
                     sx={{ minWidth: 150 }}
                 >
-                    <MenuItem value="">Žádný (root)</MenuItem>
+                    <MenuItem value="">Žádná</MenuItem>
                     {categories
                         .filter((c) => !c.parentId)
                         .map((cat) => (

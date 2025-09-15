@@ -14,7 +14,7 @@ export function Hero() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                mt: "-64px",
+                mt: "20px",
             }}
         >
             <Box
