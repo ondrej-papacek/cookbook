@@ -1,6 +1,6 @@
-﻿from fastapi import APIRouter, HTTPException
+﻿from fastapi import APIRouter, HTTPException, Body, Request
 from pydantic import BaseModel
-from typing import List
+from typing import List, Any
 from app.utils.firebase import get_db
 from app.models.category import Category
 from firebase_admin import firestore as fb_fs
@@ -58,11 +58,34 @@ def delete_category(slug: str):
     return
 
 @router.patch("/api/categories/reorder", status_code=204)
-def reorder_categories(items: List[ReorderItem]):
+async def reorder_categories(request: Request):
     """
-    items: [{ "slug": "snidane", "order": 1 }, ...]
+    Přijímá buď:
+    [
+      {"slug": "snidane", "order": 0},
+      {"slug": "vecere", "order": 1}
+    ]
+    nebo:
+    { "items": [ ... ] }
     """
     db = get_db()
+
+    payload: Any = await request.json()
+    # Log pro debug – uvidíš v Render logs
+    print("REORDER payload:", payload)
+
+    # Podpora obou tvarů
+    in_items = payload.get("items") if isinstance(payload, dict) else payload
+
+    if not isinstance(in_items, list):
+        raise HTTPException(status_code=422, detail="Invalid payload, expected list of items")
+
+    try:
+        items = [ReorderItem.model_validate(it) for it in in_items]
+    except Exception as e:
+        print("REORDER validation error:", e)
+        raise HTTPException(status_code=422, detail="Invalid item shape (slug:string, order:int required)")
+
     batch = db.batch()
     for it in items:
         batch.update(db.collection("categories").document(it.slug), {"order": it.order})

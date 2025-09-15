@@ -92,17 +92,14 @@ export function Categories() {
         const [moved] = items.splice(result.source.index, 1);
         items.splice(result.destination.index, 0, moved);
 
-        setCategories((prev) =>
-            prev.map((cat) => {
-                const newOrder = items.findIndex((c) => c.slug === cat.slug);
-                return newOrder !== -1 ? { ...cat, order: newOrder } : cat;
-            })
-        );
+        const prev = categories;
+        setCategories(prev.map((cat) => {
+            const i = items.findIndex((c) => c.slug === cat.slug);
+            return i !== -1 ? { ...cat, order: i } : cat;
+        }));
 
         try {
-            await reorderCategories(
-                items.map((cat, index) => ({ slug: cat.slug, order: index }))
-            );
+            await reorderCategories(items.map((cat, index) => ({ slug: cat.slug, order: index })));
         } catch (err) {
             console.error("Reorder failed", err);
             alert("Nepodařilo se změnit pořadí kategorií.");
