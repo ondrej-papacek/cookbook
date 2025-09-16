@@ -44,9 +44,13 @@ export function RecipeCard({ id, name, categories, image, onDeleted }: RecipeCar
     return (
         <>
             <Card
+                component={Link}
+                to={`/recipes/${id}`}
                 sx={{
                     position: "relative",
                     maxWidth: 300,
+                    textDecoration: "none",
+                    color: "inherit",
                     "&:hover .actions": { opacity: 1 },
                 }}
             >
@@ -74,6 +78,7 @@ export function RecipeCard({ id, name, categories, image, onDeleted }: RecipeCar
                         opacity: 0,
                         transition: "opacity 0.3s",
                     }}
+                    onClick={(e) => e.stopPropagation()}
                 >
                     <IconButton
                         component={Link}
