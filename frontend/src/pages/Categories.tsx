@@ -60,9 +60,19 @@ export function Categories() {
         refresh();
     }, []);
 
-    const roots = useMemo(() => categories.filter((c) => !c.parentId), [categories]);
+    const roots = useMemo(
+        () =>
+            categories
+                .filter((c) => !c.parentId)
+                .slice()
+                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
+        [categories]
+    );
     const childrenOf = (parent: string) =>
-        categories.filter((c) => c.parentId === parent);
+        categories
+            .filter((c) => c.parentId === parent)
+            .slice()
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
     const handleAdd = async () => {
         if (!newName.trim()) return;
