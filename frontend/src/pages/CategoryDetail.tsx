@@ -31,34 +31,28 @@ export function CategoryDetail() {
     }, []);
 
     const slugToName = useMemo(() => {
-        const map = new Map<string, string>();
-        categories.forEach((c) => map.set(c.slug, c.name));
-        return map;
+        const m = new Map<string, string>();
+        categories.forEach((c) => m.set(c.slug, c.name));
+        return m;
     }, [categories]);
 
     const inCategory = useMemo(
-        () => recipes.filter((r) => r.category === slug),
+        () => recipes.filter((r) => (r.categories ?? []).includes(slug || "")),
         [recipes, slug]
     );
 
     const filtered = useMemo(() => {
-        let out = inCategory;
-
-        if (filters.mealType.length > 0) {
-            out = out.filter((r) => filters.mealType.includes(r.category));
-        }
-
-        if (filters.diet.length > 0) {
-            out = out.filter((r) =>
-                r.diet?.some((d) => filters.diet.includes(d))
+        return inCategory.filter((r) => {
+            const cats = r.categories ?? [];
+            return (
+                (filters.mealType.length === 0 ||
+                    cats.some((c) => filters.mealType.includes(c))) &&
+                (filters.diet.length === 0 ||
+                    cats.some((c) => filters.diet.includes(c))) &&
+                (filters.season.length === 0 ||
+                    cats.some((c) => filters.season.includes(c)))
             );
-        }
-
-        if (filters.season.length > 0) {
-            out = out.filter((r) => filters.season.includes(r.season || ""));
-        }
-
-        return out;
+        });
     }, [inCategory, filters]);
 
     const pageCount = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
@@ -106,7 +100,9 @@ export function CategoryDetail() {
                                 key={r.id}
                                 id={r.id}
                                 name={r.name}
-                                category={slugToName.get(r.category) || r.category}
+                                category={(r.categories ?? [])
+                                    .map((s) => slugToName.get(s) || s)
+                                    .join(", ")}
                                 image={r.image}
                             />
                         ))}

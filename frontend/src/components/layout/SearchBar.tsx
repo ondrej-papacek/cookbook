@@ -21,13 +21,11 @@ export function SearchBar() {
             setOptions([]);
             return;
         }
-
         const delay = setTimeout(() => {
             searchRecipes(input)
                 .then(setOptions)
                 .catch(() => setOptions([]));
         }, 300);
-
         return () => clearTimeout(delay);
     }, [input]);
 
@@ -66,14 +64,10 @@ export function SearchBar() {
                     <Box>
                         <Typography>{option.name}</Typography>
                         <Typography variant="caption" color="text.secondary">
-                            {slugToName.get(option.category) || option.category}
+                            {(option.categories ?? [])
+                                .map((s) => slugToName.get(s) || s)
+                                .join(", ")}
                         </Typography>
-                        {(option.diet?.length || option.season) && (
-                            <Typography variant="caption" color="primary">
-                                {option.diet?.join(", ")}{" "}
-                                {option.season ? ` • ${option.season}` : ""}
-                            </Typography>
-                        )}
                     </Box>
                 </Box>
             )}
@@ -93,21 +87,13 @@ export function SearchBar() {
                     sx={{
                         "& .MuiOutlinedInput-root": {
                             color: "white",
-                            "& fieldset": {
-                                borderColor: "white",
-                            },
-                            "&:hover fieldset": {
-                                borderColor: "white",
-                            },
-                            "&.Mui-focused fieldset": {
-                                borderColor: "white",
-                            },
+                            "& fieldset": { borderColor: "white" },
+                            "&:hover fieldset": { borderColor: "white" },
+                            "&.Mui-focused fieldset": { borderColor: "white" },
                         },
                         "& .MuiInputLabel-root": {
                             color: "white",
-                            "&.Mui-focused": {
-                                color: "white",
-                            },
+                            "&.Mui-focused": { color: "white" },
                         },
                     }}
                 />

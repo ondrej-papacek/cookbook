@@ -36,18 +36,17 @@ export function AllRecipes() {
     const filtered = useMemo(() => {
         let out = recipes;
 
+        const mustContainAny = (candidate: string[]) => (r: string[] = []) =>
+            r.some((s) => candidate.includes(s));
+
         if (filters.mealType.length > 0) {
-            out = out.filter((r) => filters.mealType.includes(r.category));
+            out = out.filter((r) => mustContainAny(filters.mealType)(r.categories));
         }
-
         if (filters.diet.length > 0) {
-            out = out.filter((r) =>
-                r.diet?.some((d) => filters.diet.includes(d))
-            );
+            out = out.filter((r) => mustContainAny(filters.diet)(r.categories));
         }
-
         if (filters.season.length > 0) {
-            out = out.filter((r) => filters.season.includes(r.season || ""));
+            out = out.filter((r) => mustContainAny(filters.season)(r.categories));
         }
 
         return out;
@@ -85,7 +84,6 @@ export function AllRecipes() {
                     gap: 4,
                 }}
             >
-
                 <Box sx={{ flex: { xs: "1 1 auto", md: "0 0 280px" } }}>
                     <RecipeFilter filters={filters} onFilterChange={handleFilterChange} />
                 </Box>
@@ -97,7 +95,9 @@ export function AllRecipes() {
                                 key={r.id}
                                 id={r.id}
                                 name={r.name}
-                                category={slugToName.get(r.category) || r.category}
+                                category={(r.categories ?? [])
+                                    .map((s) => slugToName.get(s) || s)
+                                    .join(", ")}
                                 image={r.image}
                             />
                         ))}

@@ -20,9 +20,10 @@ export function RecipeDetail() {
 
     if (!recipe) return <p>Načítám...</p>;
 
-    const categoryName =
-        categories.find((c) => c.slug === recipe.category)?.name ||
-        recipe.category;
+    const slugToName = new Map(categories.map((c) => [c.slug, c.name]));
+    const categoryNames = (recipe.categories ?? [])
+        .map((s: string) => slugToName.get(s) || s)
+        .join(", ");
 
     return (
         <Box sx={{ maxWidth: 800, mx: "auto" }}>
@@ -37,12 +38,12 @@ export function RecipeDetail() {
                 {recipe.name}
             </Typography>
             <Typography variant="subtitle1" gutterBottom color="text.secondary">
-                Kategorie: {categoryName}
+                Kategorie: {categoryNames}
             </Typography>
 
             <Typography variant="h5">Ingredience</Typography>
             <List>
-                {recipe.ingredients.map((ing: string, i: number) => (
+                {(recipe.ingredients ?? []).map((ing: string, i: number) => (
                     <ListItem key={i}>{ing}</ListItem>
                 ))}
             </List>
@@ -51,7 +52,7 @@ export function RecipeDetail() {
                 Postup
             </Typography>
             <List>
-                {recipe.steps.map((step: string, i: number) => (
+                {(recipe.steps ?? []).map((step: string, i: number) => (
                     <ListItem key={i}>{step}</ListItem>
                 ))}
             </List>

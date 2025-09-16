@@ -1,22 +1,26 @@
-﻿import { useState, useEffect } from "react";
-import { Box, TextField, Typography, MenuItem } from "@mui/material";
+﻿import { useState, useEffect, useMemo } from "react";
+import {
+    Box,
+    Typography,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    Select,
+    OutlinedInput,
+    TextField,
+} from "@mui/material";
 import { Button } from "../components/UI/Button";
 import { uploadImage } from "../services/cloudinary";
 import { getCategories, type Category } from "../api/categories";
 import { createRecipe } from "../api/recipes";
 
-const DIETS = ["Vegan", "Vegetarian", "Gluten-free", "Dairy-free"];
-const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
-
 export function AddRecipe() {
     const [name, setName] = useState("");
-    const [category, setCategory] = useState(""); // slug
+    const [categoriesSelected, setCategoriesSelected] = useState<string[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [ingredients, setIngredients] = useState("");
     const [steps, setSteps] = useState("");
     const [image, setImage] = useState<string | undefined>(undefined);
-    const [diet, setDiet] = useState<string[]>([]);
-    const [season, setSeason] = useState("");
 
     useEffect(() => {
         getCategories().then(setCategories);
@@ -29,32 +33,29 @@ export function AddRecipe() {
         }
     };
 
-    const toggleDiet = (d: string) => {
-        setDiet((prev) =>
-            prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]
-        );
-    };
+    const roots = useMemo(
+        () => categories.filter((c) => !c.parentId),
+        [categories]
+    );
+    const childrenOf = (parentId: string) =>
+        categories.filter((c) => c.parentId === parentId);
 
     const handleSubmit = async () => {
         try {
             await createRecipe({
                 name,
-                category,
-                ingredients: ingredients.split("\n"),
-                steps: steps.split("\n"),
+                categories: categoriesSelected,
+                ingredients: ingredients.split("\n").filter(Boolean),
+                steps: steps.split("\n").filter(Boolean),
                 tags: [],
                 image,
-                diet,
-                season,
             });
             alert("Recept byl přidán!");
             setName("");
-            setCategory("");
+            setCategoriesSelected([]);
             setIngredients("");
             setSteps("");
             setImage(undefined);
-            setDiet([]);
-            setSeason("");
         } catch (err) {
             console.error(err);
             alert("Nepodařilo se uložit recept.");
@@ -75,20 +76,28 @@ export function AddRecipe() {
                 sx={{ mb: 2 }}
             />
 
-            <TextField
-                select
-                fullWidth
-                label="Kategorie"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                sx={{ mb: 2 }}
-            >
-                {categories.map((cat) => (
-                    <MenuItem key={cat.id} value={cat.slug}>
-                        {cat.name}
-                    </MenuItem>
-                ))}
-            </TextField>
+            <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel id="categories-label">Kategorie</InputLabel>
+                <Select
+                    labelId="categories-label"
+                    multiple
+                    value={categoriesSelected}
+                    onChange={(e) => setCategoriesSelected(e.target.value as string[])}
+                    input={<OutlinedInput label="Kategorie" />}
+                    renderValue={(selected) => selected.join(", ")}
+                >
+                    {roots.map((root) => [
+                        <MenuItem key={root.id} value={root.slug}>
+                            {root.name}
+                        </MenuItem>,
+                        ...childrenOf(root.id).map((child) => (
+                            <MenuItem key={child.id} value={child.slug} sx={{ pl: 3 }}>
+                                {child.name}
+                            </MenuItem>
+                        )),
+                    ])}
+                </Select>
+            </FormControl>
 
             <TextField
                 fullWidth
@@ -115,38 +124,6 @@ export function AddRecipe() {
                 <input type="file" hidden onChange={handleImage} />
             </Button>
             {image && <img src={image} alt="preview" width={200} />}
-
-            <Box sx={{ my: 2 }}>
-                <Typography variant="h6">Dieta</Typography>
-                {DIETS.map((d) => (
-                    <Box key={d}>
-                        <label>
-                            <input
-                                type="checkbox"
-                                checked={diet.includes(d)}
-                                onChange={() => toggleDiet(d)}
-                            />
-                            {d}
-                        </label>
-                    </Box>
-                ))}
-            </Box>
-
-            <TextField
-                select
-                fullWidth
-                label="Sezóna"
-                value={season}
-                onChange={(e) => setSeason(e.target.value)}
-                sx={{ my: 2 }}
-            >
-                <MenuItem value="">Žádná</MenuItem>
-                {SEASONS.map((s) => (
-                    <MenuItem key={s} value={s}>
-                        {s}
-                    </MenuItem>
-                ))}
-            </TextField>
 
             <Box mt={2}>
                 <Button variant="contained" color="primary" onClick={handleSubmit}>

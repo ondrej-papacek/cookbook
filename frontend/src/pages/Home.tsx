@@ -29,7 +29,14 @@ export function Home() {
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 2,
+                }}
+            >
                 <Typography variant="h4">Recepty pro dnešní den</Typography>
                 <Button variant="contained" component={Link} to="/recepty">
                     Zobrazit všechny
@@ -42,7 +49,9 @@ export function Home() {
                         key={r.id}
                         id={r.id}
                         name={r.name}
-                        category={slugToName.get(r.category) || r.category}
+                        category={(r.categories ?? [])
+                            .map((s) => slugToName.get(s) || s)
+                            .join(", ")}
                         image={r.image}
                     />
                 ))}

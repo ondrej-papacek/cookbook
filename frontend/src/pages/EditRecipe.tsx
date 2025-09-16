@@ -1,13 +1,19 @@
-﻿import { useEffect, useState } from "react";
-import { Box, TextField, Typography, MenuItem } from "@mui/material";
+﻿import { useEffect, useMemo, useState } from "react";
+import {
+    Box,
+    Typography,
+    TextField,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    Select,
+    OutlinedInput,
+} from "@mui/material";
 import { Button } from "../components/UI/Button";
 import { uploadImage } from "../services/cloudinary";
 import { useParams, useNavigate } from "react-router-dom";
 import { getCategories, type Category } from "../api/categories";
 import { getRecipe, updateRecipe } from "../api/recipes";
-
-const DIETS = ["Vegan", "Vegetarian", "Gluten-free", "Dairy-free"];
-const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
 
 export function EditRecipe() {
     const { id } = useParams();
@@ -22,21 +28,18 @@ export function EditRecipe() {
         getCategories().then(setCategories);
     }, [id]);
 
+    const roots = useMemo(
+        () => categories.filter((c) => !c.parentId),
+        [categories]
+    );
+    const childrenOf = (parentId: string) =>
+        categories.filter((c) => c.parentId === parentId);
+
     const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
             const url = await uploadImage(e.target.files[0]);
             setRecipe({ ...recipe, image: url });
         }
-    };
-
-    const toggleDiet = (d: string) => {
-        const current = recipe.diet || [];
-        setRecipe({
-            ...recipe,
-            diet: current.includes(d)
-                ? current.filter((x: string) => x !== d)
-                : [...current, d],
-        });
     };
 
     const handleSave = async () => {
@@ -62,27 +65,38 @@ export function EditRecipe() {
                 sx={{ mb: 2 }}
             />
 
-            <TextField
-                select
-                fullWidth
-                label="Kategorie"
-                value={recipe.category}
-                onChange={(e) => setRecipe({ ...recipe, category: e.target.value })}
-                sx={{ mb: 2 }}
-            >
-                {categories.map((cat) => (
-                    <MenuItem key={cat.id} value={cat.slug}>
-                        {cat.name}
-                    </MenuItem>
-                ))}
-            </TextField>
+            {/* MULTI SELECT KATEGORIÍ */}
+            <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel id="categories-label">Kategorie</InputLabel>
+                <Select
+                    labelId="categories-label"
+                    multiple
+                    value={recipe.categories ?? []}
+                    onChange={(e) =>
+                        setRecipe({ ...recipe, categories: e.target.value as string[] })
+                    }
+                    input={<OutlinedInput label="Kategorie" />}
+                    renderValue={(selected) => (selected as string[]).join(", ")}
+                >
+                    {roots.map((root) => [
+                        <MenuItem key={root.id} value={root.slug}>
+                            {root.name}
+                        </MenuItem>,
+                        ...childrenOf(root.id).map((child) => (
+                            <MenuItem key={child.id} value={child.slug} sx={{ pl: 3 }}>
+                                {child.name}
+                            </MenuItem>
+                        )),
+                    ])}
+                </Select>
+            </FormControl>
 
             <TextField
                 fullWidth
                 multiline
                 rows={4}
                 label="Ingredience"
-                value={recipe.ingredients.join("\n")}
+                value={(recipe.ingredients ?? []).join("\n")}
                 onChange={(e) =>
                     setRecipe({ ...recipe, ingredients: e.target.value.split("\n") })
                 }
@@ -94,7 +108,7 @@ export function EditRecipe() {
                 multiline
                 rows={4}
                 label="Postup"
-                value={recipe.steps.join("\n")}
+                value={(recipe.steps ?? []).join("\n")}
                 onChange={(e) =>
                     setRecipe({ ...recipe, steps: e.target.value.split("\n") })
                 }
@@ -106,38 +120,6 @@ export function EditRecipe() {
                 <input type="file" hidden onChange={handleImage} />
             </Button>
             {recipe.image && <img src={recipe.image} alt="preview" width={200} />}
-
-            <Box sx={{ my: 2 }}>
-                <Typography variant="h6">Dieta</Typography>
-                {DIETS.map((d) => (
-                    <Box key={d}>
-                        <label>
-                            <input
-                                type="checkbox"
-                                checked={recipe.diet?.includes(d)}
-                                onChange={() => toggleDiet(d)}
-                            />
-                            {d}
-                        </label>
-                    </Box>
-                ))}
-            </Box>
-
-            <TextField
-                select
-                fullWidth
-                label="Sezóna"
-                value={recipe.season || ""}
-                onChange={(e) => setRecipe({ ...recipe, season: e.target.value })}
-                sx={{ my: 2 }}
-            >
-                <MenuItem value="">Žádná</MenuItem>
-                {SEASONS.map((s) => (
-                    <MenuItem key={s} value={s}>
-                        {s}
-                    </MenuItem>
-                ))}
-            </TextField>
 
             <Box mt={2}>
                 <Button variant="contained" color="primary" onClick={handleSave}>
