@@ -105,17 +105,12 @@ export function Categories() {
         const [moved] = items.splice(result.source.index, 1);
         items.splice(result.destination.index, 0, moved);
 
-        setCategories((prev) =>
-            prev.map((cat) => {
-                const i = items.findIndex((c) => c.id === cat.id);
-                return i !== -1 ? { ...cat, order: i } : cat;
-            })
-        );
-
         try {
             await reorderCategories(
                 items.map((cat, index) => ({ id: cat.id, order: index }))
             );
+
+            await refresh();
         } catch (err) {
             console.error("Reorder failed", err);
             alert("Nepodařilo se změnit pořadí kategorií.");
