@@ -16,9 +16,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Link } from "react-router-dom";
 import { Button } from "./UI/Button";
-import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { deleteRecipe } from "../api/recipes";
 
 export type RecipeCardProps = {
     id: string;
@@ -33,7 +31,7 @@ export function RecipeCard({ id, name, categories, image, onDeleted }: RecipeCar
 
     const handleDelete = async () => {
         try {
-            await axios.delete(`${API_URL}/api/recipes/${id}`);
+            await deleteRecipe(id);
             setOpen(false);
             if (onDeleted) onDeleted();
         } catch (err) {
@@ -44,13 +42,9 @@ export function RecipeCard({ id, name, categories, image, onDeleted }: RecipeCar
     return (
         <>
             <Card
-                component={Link}
-                to={`/recipes/${id}`}
                 sx={{
                     position: "relative",
                     maxWidth: 300,
-                    textDecoration: "none",
-                    color: "inherit",
                     "&:hover .actions": { opacity: 1 },
                 }}
             >
@@ -78,7 +72,6 @@ export function RecipeCard({ id, name, categories, image, onDeleted }: RecipeCar
                         opacity: 0,
                         transition: "opacity 0.3s",
                     }}
-                    onClick={(e) => e.stopPropagation()}
                 >
                     <IconButton
                         component={Link}

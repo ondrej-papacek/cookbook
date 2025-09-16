@@ -40,6 +40,8 @@ export async function deleteRecipe(id: string): Promise<void> {
 }
 
 export async function searchRecipes(q: string): Promise<Recipe[]> {
-    const res = await axios.get(`${API_URL}/recipes/search?q=${encodeURIComponent(q)}`);
+    const res = await axios.get(
+        `${API_URL}/api/recipes/search?q=${encodeURIComponent(q)}`
+    );
     return res.data;
 }
