@@ -23,12 +23,12 @@ const API_URL = import.meta.env.VITE_API_URL;
 export type RecipeCardProps = {
     id: string;
     name: string;
-    category: string;
+    categories: string[];
     image?: string;
     onDeleted?: () => void;
 };
 
-export function RecipeCard({ id, name, category, image, onDeleted }: RecipeCardProps) {
+export function RecipeCard({ id, name, categories, image, onDeleted }: RecipeCardProps) {
     const [open, setOpen] = useState(false);
 
     const handleDelete = async () => {
@@ -47,19 +47,22 @@ export function RecipeCard({ id, name, category, image, onDeleted }: RecipeCardP
                 sx={{
                     position: "relative",
                     maxWidth: 300,
-                    "&:hover .actions": { opacity: 1 }, // 👈 key change
+                    "&:hover .actions": { opacity: 1 },
                 }}
             >
-                {/* Recipe image */}
-                {image && <CardMedia component="img" height="180" image={image} alt={name} />}
+                {image && (
+                    <CardMedia component="img" height="180" image={image} alt={name} />
+                )}
 
-                {/* Content */}
                 <CardContent>
-                    <Typography variant="h6" gutterBottom>{name}</Typography>
-                    <Typography variant="body2" color="text.secondary">{category}</Typography>
+                    <Typography variant="h6" gutterBottom>
+                        {name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" noWrap>
+                        {categories.join(", ")}
+                    </Typography>
                 </CardContent>
 
-                {/* Hover icons */}
                 <Box
                     className="actions"
                     sx={{
@@ -72,19 +75,25 @@ export function RecipeCard({ id, name, category, image, onDeleted }: RecipeCardP
                         transition: "opacity 0.3s",
                     }}
                 >
-                    {/* Edit */}
-                    <IconButton component={Link} to={`/edit/${id}`} size="small" sx={{ bgcolor: "white" }}>
+                    <IconButton
+                        component={Link}
+                        to={`/edit/${id}`}
+                        size="small"
+                        sx={{ bgcolor: "white" }}
+                    >
                         <EditIcon fontSize="small" />
                     </IconButton>
 
-                    {/* Delete */}
-                    <IconButton size="small" sx={{ bgcolor: "white" }} onClick={() => setOpen(true)}>
+                    <IconButton
+                        size="small"
+                        sx={{ bgcolor: "white" }}
+                        onClick={() => setOpen(true)}
+                    >
                         <DeleteIcon fontSize="small" color="error" />
                     </IconButton>
                 </Box>
             </Card>
 
-            {/* Delete confirmation dialog */}
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>Smazat recept?</DialogTitle>
                 <DialogContent>

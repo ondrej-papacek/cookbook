@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { Box, Typography, List, ListItem } from "@mui/material";
 import { getCategories, type Category } from "../api/categories";
@@ -18,12 +18,16 @@ export function RecipeDetail() {
         getCategories().then(setCategories);
     }, []);
 
+    const slugToName = useMemo(
+        () => new Map(categories.map((c) => [c.slug, c.name])),
+        [categories]
+    );
+
     if (!recipe) return <p>Načítám...</p>;
 
-    const slugToName = new Map(categories.map((c) => [c.slug, c.name]));
-    const categoryNames = (recipe.categories ?? [])
-        .map((s: string) => slugToName.get(s) || s)
-        .join(", ");
+    const categoryNames = (recipe.categories ?? []).map(
+        (s: string) => slugToName.get(s) || s
+    );
 
     return (
         <Box sx={{ maxWidth: 800, mx: "auto" }}>
@@ -38,7 +42,7 @@ export function RecipeDetail() {
                 {recipe.name}
             </Typography>
             <Typography variant="subtitle1" gutterBottom color="text.secondary">
-                Kategorie: {categoryNames}
+                Kategorie: {categoryNames.join(", ")}
             </Typography>
 
             <Typography variant="h5">Ingredience</Typography>

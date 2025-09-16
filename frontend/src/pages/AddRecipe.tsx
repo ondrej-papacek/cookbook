@@ -84,7 +84,11 @@ export function AddRecipe() {
                     value={categoriesSelected}
                     onChange={(e) => setCategoriesSelected(e.target.value as string[])}
                     input={<OutlinedInput label="Kategorie" />}
-                    renderValue={(selected) => selected.join(", ")}
+                    renderValue={(selected) =>
+                        (selected as string[])
+                            .map((slug) => categories.find((c) => c.slug === slug)?.name || slug)
+                            .join(", ")
+                    }
                 >
                     {roots.map((root) => [
                         <MenuItem key={root.id} value={root.slug}>
