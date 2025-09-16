@@ -14,7 +14,6 @@ export default function App() {
             <Layout>
                 <Routes>
                     <Route path="/" element={<Home />} />
-                    {/* list all categories OR show recipes by slug */}
                     <Route path="/categories" element={<Categories />} />
                     <Route path="/categories/:slug" element={<CategoryDetail />} />
                     <Route path="/recepty" element={<AllRecipes />} />

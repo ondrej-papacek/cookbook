@@ -17,14 +17,14 @@ class ReorderPayload(BaseModel):
     items: List[ReorderItem]
 
 
-@router.get("/api/categories")
+@router.get("/categories")
 def get_categories():
     db = get_db()
     docs = db.collection("categories").order_by("order").stream()
     return [{**d.to_dict(), "id": d.id} for d in docs]
 
 
-@router.post("/api/categories", status_code=201)
+@router.post("/categories", status_code=201)
 def create_category(cat: Category):
     db = get_db()
 
@@ -46,7 +46,7 @@ def create_category(cat: Category):
     return {"id": doc_ref.id, **data}
 
 
-@router.patch("/api/categories/{id}")
+@router.patch("/categories/{id}")
 def update_category(id: str, payload: dict):
     db = get_db()
     doc_ref = db.collection("categories").document(id)
@@ -57,7 +57,7 @@ def update_category(id: str, payload: dict):
     return {**new_doc.to_dict(), "id": new_doc.id}
 
 
-@router.delete("/api/categories/{id}", status_code=204)
+@router.delete("/categories/{id}", status_code=204)
 def delete_category(id: str):
     db = get_db()
     doc_ref = db.collection("categories").document(id)
@@ -67,7 +67,7 @@ def delete_category(id: str):
     return
 
 
-@router.patch("/api/categories/reorder", status_code=204)
+@router.patch("/categories/reorder", status_code=204)
 def reorder_categories(payload: ReorderPayload):
     db = get_db()
     batch = db.batch()

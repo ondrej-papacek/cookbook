@@ -11,8 +11,8 @@ export type RecipeFilterProps = {
     hiddenSections?: Sections[];
 };
 
-const DIETS = ["Vegan", "Vegetarian", "Gluten-free", "Dairy-free"];
-const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
+const DIETS = ["Vegetariánské", "Bezlepkové", "Bezlaktózové"];
+const SEASONS = ["Jaro", "Léto", "Podzim", "Zima"];
 
 export function RecipeFilter({
                                  filters,
