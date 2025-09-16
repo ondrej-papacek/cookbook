@@ -1,11 +1,23 @@
-﻿import { useMemo } from "react";
+﻿import { useMemo, useEffect, useState } from "react";
 import { Box, Button, Container, Typography } from "@mui/material";
 import { RecipeCard } from "../components/RecipeCard";
 import { Link } from "react-router-dom";
 import { useRecipes } from "../hooks/useRecipes";
+import { getCategories, type Category } from "../api/categories";
 
 export function Home() {
     const { recipes, loading } = useRecipes();
+    const [categories, setCategories] = useState<Category[]>([]);
+
+    useEffect(() => {
+        getCategories().then(setCategories);
+    }, []);
+
+    const slugToName = useMemo(() => {
+        const map = new Map<string, string>();
+        categories.forEach((c) => map.set(c.slug, c.name));
+        return map;
+    }, [categories]);
 
     const random = useMemo(() => {
         const arr = [...recipes];
@@ -30,7 +42,7 @@ export function Home() {
                         key={r.id}
                         id={r.id}
                         name={r.name}
-                        category={r.category}
+                        category={slugToName.get(r.category) || r.category}
                         image={r.image}
                     />
                 ))}

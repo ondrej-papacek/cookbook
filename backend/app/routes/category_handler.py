@@ -1,9 +1,9 @@
-﻿from fastapi import APIRouter, HTTPException
+﻿from fastapi import APIRouter, HTTPException, Body
 from pydantic import BaseModel
 from typing import List
 from app.utils.firebase import get_db
 from app.models.category import Category
-from firebase_admin import firestore as fb_fs
+from firebase_admin import firestore
 
 router = APIRouter()
 
@@ -23,7 +23,7 @@ def create_category(cat: Category):
 
     last = list(
         db.collection("categories")
-        .order_by("order", direction=fb_fs.Query.DESCENDING)
+        .order_by("order", direction=firestore.Query.DESCENDING)
         .limit(1)
         .stream()
     )
@@ -58,7 +58,7 @@ def delete_category(id: str):
     return
 
 @router.patch("/api/categories/reorder", status_code=204)
-def reorder_categories(items: List[ReorderItem]):
+def reorder_categories(items: List[ReorderItem] = Body(...)):
     db = get_db()
     batch = db.batch()
     for it in items:

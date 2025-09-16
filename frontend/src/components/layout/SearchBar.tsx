@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+﻿import { useState, useEffect, useMemo } from "react";
 import {
     TextField,
     Autocomplete,
@@ -8,10 +8,12 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { searchRecipes, type Recipe } from "../../api/recipes";
+import { getCategories, type Category } from "../../api/categories";
 
 export function SearchBar() {
     const [options, setOptions] = useState<Recipe[]>([]);
     const [input, setInput] = useState("");
+    const [categories, setCategories] = useState<Category[]>([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -28,6 +30,16 @@ export function SearchBar() {
 
         return () => clearTimeout(delay);
     }, [input]);
+
+    useEffect(() => {
+        getCategories().then(setCategories);
+    }, []);
+
+    const slugToName = useMemo(() => {
+        const map = new Map<string, string>();
+        categories.forEach((c) => map.set(c.slug, c.name));
+        return map;
+    }, [categories]);
 
     return (
         <Autocomplete<Recipe, false, false, true>
@@ -54,7 +66,7 @@ export function SearchBar() {
                     <Box>
                         <Typography>{option.name}</Typography>
                         <Typography variant="caption" color="text.secondary">
-                            {option.category}
+                            {slugToName.get(option.category) || option.category}
                         </Typography>
                         {(option.diet?.length || option.season) && (
                             <Typography variant="caption" color="primary">

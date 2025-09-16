@@ -175,7 +175,7 @@ export function Categories() {
                                                             </IconButton>
                                                             <IconButton
                                                                 edge="end"
-                                                                onClick={() => handleDelete(root.slug)}
+                                                                onClick={() => handleDelete(root.id)}
                                                             >
                                                                 <Delete color="error" />
                                                             </IconButton>
@@ -207,7 +207,7 @@ export function Categories() {
                                                                         </IconButton>
                                                                         <IconButton
                                                                             edge="end"
-                                                                            onClick={() => handleDelete(child.slug)}
+                                                                            onClick={() => handleDelete(child.id)}
                                                                             size="small"
                                                                         >
                                                                             <Delete color="error" fontSize="small" />
