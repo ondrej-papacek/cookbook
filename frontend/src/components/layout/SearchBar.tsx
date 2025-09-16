@@ -24,7 +24,10 @@ export function SearchBar() {
         const delay = setTimeout(() => {
             searchRecipes(input)
                 .then(setOptions)
-                .catch(() => setOptions([]));
+                .catch((err) => {
+                    console.error("Search failed:", err);
+                    setOptions([]);
+                });
         }, 300);
         return () => clearTimeout(delay);
     }, [input]);
@@ -62,8 +65,11 @@ export function SearchBar() {
                         />
                     )}
                     <Box>
-                        <Typography>{option.name}</Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="subtitle2" fontWeight="bold">
+                            {option.name}
+                        </Typography>
+
+                        <Typography variant="body2" color="text.secondary">
                             {(option.categories ?? [])
                                 .map((s) => slugToName.get(s) || s)
                                 .join(", ")}
