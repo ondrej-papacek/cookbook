@@ -48,18 +48,24 @@ export function RecipeCard({ id, name, categories, image, onDeleted }: RecipeCar
                     "&:hover .actions": { opacity: 1 },
                 }}
             >
-                {image && (
-                    <CardMedia component="img" height="180" image={image} alt={name} />
-                )}
+                <Box
+                    component={Link}
+                    to={`/recipes/${id}`}
+                    sx={{ textDecoration: "none", color: "inherit" }}
+                >
+                    {image && (
+                        <CardMedia component="img" height="180" image={image} alt={name} />
+                    )}
 
-                <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                        {name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" noWrap>
-                        {categories.join(", ")}
-                    </Typography>
-                </CardContent>
+                    <CardContent>
+                        <Typography variant="h6" gutterBottom>
+                            {name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" noWrap>
+                            {categories.join(", ")}
+                        </Typography>
+                    </CardContent>
+                </Box>
 
                 <Box
                     className="actions"
