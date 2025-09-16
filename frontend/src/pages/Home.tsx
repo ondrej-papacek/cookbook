@@ -49,9 +49,9 @@ export function Home() {
                         key={r.id}
                         id={r.id}
                         name={r.name}
-                        category={(r.categories ?? [])
-                            .map((s) => slugToName.get(s) || s)
-                            .join(", ")}
+                        categories={(r.categories ?? []).map(
+                            (s) => slugToName.get(s) || s
+                        )}
                         image={r.image}
                     />
                 ))}
