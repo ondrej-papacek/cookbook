@@ -45,6 +45,14 @@ def create_category(cat: Category):
 
     return {"id": doc_ref.id, **data}
 
+@router.patch("/categories/reorder", status_code=204)
+def reorder_categories(payload: ReorderPayload):
+    db = get_db()
+    batch = db.batch()
+    for it in payload.items:
+        batch.update(db.collection("categories").document(it.id), {"order": it.order})
+    batch.commit()
+    return
 
 @router.patch("/categories/{id}")
 def update_category(id: str, payload: dict):
@@ -64,14 +72,4 @@ def delete_category(id: str):
     if not doc_ref.get().exists:
         raise HTTPException(status_code=404, detail="Category not found")
     doc_ref.delete()
-    return
-
-
-@router.patch("/categories/reorder", status_code=204)
-def reorder_categories(payload: ReorderPayload):
-    db = get_db()
-    batch = db.batch()
-    for it in payload.items:
-        batch.update(db.collection("categories").document(it.id), {"order": it.order})
-    batch.commit()
     return
