@@ -25,10 +25,11 @@ export function Navbar() {
                 position="sticky"
                 elevation={0}
                 sx={{
-                    bgcolor: "rgba(255, 255, 255, 0.9)",
+                    bgcolor: "rgba(255, 255, 255, 0.7)",
                     backdropFilter: "blur(12px)",
                     WebkitBackdropFilter: "blur(12px)",
                     color: "#401f0a",
+                    zIndex: (theme) => theme.zIndex.appBar + 1,
                 }}
             >
                 <Container maxWidth="lg">
