@@ -7,7 +7,7 @@ export function Hero() {
                 width: "100%",
                 display: "flex",
                 justifyContent: "center",
-                bgcolor: "#000",
+                bgcolor: "#fff",
             }}
         >
             <Box
@@ -16,7 +16,7 @@ export function Hero() {
                     position: "relative",
                     color: "white",
                     textAlign: "center",
-                    backgroundImage: `url("/cookbook.png")`,
+                    backgroundImage: `url("/cookbook-1440.png")`,
                     backgroundSize: "contain",
                     backgroundRepeat: "no-repeat",
                     backgroundPosition: "top center",
