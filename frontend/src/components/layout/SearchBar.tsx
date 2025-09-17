@@ -92,17 +92,19 @@ export function SearchBar() {
                     fullWidth
                     sx={{
                         "& .MuiOutlinedInput-root": {
-                            color: "white",
-                            "& fieldset": { borderColor: "white" },
-                            "&:hover fieldset": { borderColor: "white" },
-                            "&.Mui-focused fieldset": { borderColor: "white" },
+                            color: "#401f0a",
+                            bgcolor: "white",
+                            "& fieldset": { borderColor: "#401f0a" },
+                            "&:hover fieldset": { borderColor: "#401f0a" },
+                            "&.Mui-focused fieldset": { borderColor: "#401f0a" },
                         },
                         "& .MuiInputLabel-root": {
-                            color: "white",
-                            "&.Mui-focused": { color: "white" },
+                            color: "#401f0a",
+                            "&.Mui-focused": { color: "#401f0a" },
                         },
                     }}
                 />
+
             )}
         />
     );

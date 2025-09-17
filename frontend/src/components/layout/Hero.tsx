@@ -12,6 +12,7 @@ export function Hero() {
         >
             <Box
                 sx={{
+                    width: "100%",
                     position: "relative",
                     color: "white",
                     textAlign: "center",
@@ -19,12 +20,11 @@ export function Hero() {
                     backgroundSize: "contain",
                     backgroundRepeat: "no-repeat",
                     backgroundPosition: "top center",
-                    height: "60vh",
-                    width: "100%",
-                    maxWidth: "1200px",
+                    height: { xs: "60vh", md: "75vh" },
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    mt: "-64px",
                 }}
             >
                 <Box
