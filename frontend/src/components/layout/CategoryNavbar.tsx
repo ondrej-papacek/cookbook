@@ -27,7 +27,7 @@ export function CategoryNavbar({ onItemClick }: Props) {
                 borderColor: "divider",
             }}
         >
-            <Container
+            <Container maxWidth="lg"
                 sx={{
                     display: "flex",
                     gap: 2,

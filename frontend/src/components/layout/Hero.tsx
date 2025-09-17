@@ -14,7 +14,6 @@ export function Hero() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                mt: "20px",
             }}
         >
             <Box
@@ -28,7 +27,7 @@ export function Hero() {
                 }}
             />
 
-            <Container sx={{ position: "relative", zIndex: 1 }}>
+            <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
                 <Typography
                     variant="h3"
                     gutterBottom
