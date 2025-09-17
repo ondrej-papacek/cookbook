@@ -13,6 +13,7 @@ export function Hero() {
             <Box
                 sx={{
                     width: "100%",
+                    maxWidth: "1440px",
                     position: "relative",
                     color: "white",
                     textAlign: "center",
@@ -20,13 +21,14 @@ export function Hero() {
                     backgroundSize: "contain",
                     backgroundRepeat: "no-repeat",
                     backgroundPosition: "top center",
-                    height: { xs: "60vh", md: "75vh" },
+                    height: { xs: "75vh", md: "75vh" },
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     mt: "-64px",
                 }}
             >
+                {/* 👇 overlay pouze přes obrázek */}
                 <Box
                     sx={{
                         position: "absolute",
@@ -35,6 +37,8 @@ export function Hero() {
                         right: 0,
                         bottom: 0,
                         bgcolor: "rgba(0,0,0,0.4)",
+                        width: "100%",
+                        height: "100%",
                     }}
                 />
 
