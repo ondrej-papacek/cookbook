@@ -9,12 +9,8 @@ type Props = { children: React.ReactNode };
 export function Layout({ children }: Props) {
     return (
         <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-            <div style={{ position: "relative" }}>
-                <Hero />
-                <div style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
-                    <Navbar />
-                </div>
-            </div>
+            <Navbar />
+            <Hero />
 
             <Divider />
 
