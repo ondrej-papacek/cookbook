@@ -1,28 +1,32 @@
 ﻿from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from app.utils.firebase import get_db
 from app.models.category import Category
 from firebase_admin import firestore
 
 router = APIRouter()
 
-
 class ReorderItem(BaseModel):
     id: str
     order: int
 
-
 class ReorderPayload(BaseModel):
     items: List[ReorderItem]
 
+class CategoryUpdate(BaseModel):
+    name: Optional[str]
+    slug: Optional[str]
+    description: Optional[str]
+    order: Optional[int]
+    parentId: Optional[str | None]
+    type: Optional[str] = None
 
 @router.get("/categories")
 def get_categories():
     db = get_db()
     docs = db.collection("categories").order_by("order").stream()
     return [{**d.to_dict(), "id": d.id} for d in docs]
-
 
 @router.post("/categories", status_code=201)
 def create_category(cat: Category):
@@ -40,7 +44,7 @@ def create_category(cat: Category):
     if data.get("order") is None:
         data["order"] = next_order
 
-    doc_ref = db.collection("categories").document()  # auto ID
+    doc_ref = db.collection("categories").document()
     doc_ref.set(data)
 
     return {"id": doc_ref.id, **data}
@@ -55,15 +59,14 @@ def reorder_categories(payload: ReorderPayload):
     return
 
 @router.patch("/categories/{id}")
-def update_category(id: str, payload: dict):
+def update_category(id: str, payload: CategoryUpdate):
     db = get_db()
     doc_ref = db.collection("categories").document(id)
     if not doc_ref.get().exists:
         raise HTTPException(status_code=404, detail="Category not found")
-    doc_ref.update(payload)
+    doc_ref.update(payload.dict(exclude_unset=True))
     new_doc = doc_ref.get()
     return {**new_doc.to_dict(), "id": new_doc.id}
-
 
 @router.delete("/categories/{id}", status_code=204)
 def delete_category(id: str):

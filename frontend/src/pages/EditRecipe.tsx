@@ -9,6 +9,7 @@ import {
     Select,
     OutlinedInput,
 } from "@mui/material";
+import TextareaAutosize from '@mui/material/TextareaAutosize';
 import { Button } from "../components/UI/Button";
 import { uploadImage } from "../services/cloudinary";
 import { useParams, useNavigate } from "react-router-dom";
@@ -43,6 +44,11 @@ export function EditRecipe() {
     };
 
     const handleSave = async () => {
+        if (recipe.youtubeUrl && !recipe.youtubeUrl.includes("youtube.com/watch?v=")) {
+            alert("Zadej prosím platnou YouTube URL.");
+            return;
+        }
+
         if (!id) return;
         await updateRecipe(id, recipe);
         alert("Recept byl aktualizován!");
@@ -65,7 +71,6 @@ export function EditRecipe() {
                 sx={{ mb: 2 }}
             />
 
-            {/* MULTI SELECT KATEGORIÍ */}
             <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel id="categories-label">Kategorie</InputLabel>
                 <Select
@@ -95,26 +100,50 @@ export function EditRecipe() {
                 </Select>
             </FormControl>
 
-            <TextField
-                fullWidth
-                multiline
-                rows={4}
-                label="Ingredience"
+            <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Ingredience
+            </Typography>
+            <TextareaAutosize
+                minRows={3}
+                style={{
+                    width: '100%',
+                    fontSize: '1rem',
+                    fontFamily: 'inherit',
+                    padding: '16.5px 14px',
+                    borderRadius: 4,
+                    border: '1px solid #ccc',
+                    resize: 'none',
+                    marginBottom: '1rem',
+                }}
                 value={(recipe.ingredients ?? []).join("\n")}
                 onChange={(e) =>
                     setRecipe({ ...recipe, ingredients: e.target.value.split("\n") })
                 }
-                sx={{ mb: 2 }}
+            />
+
+            <TextareaAutosize
+                minRows={3}
+                style={{
+                    width: '100%',
+                    fontSize: '1rem',
+                    fontFamily: 'inherit',
+                    padding: '16.5px 14px',
+                    borderRadius: 4,
+                    border: '1px solid #ccc',
+                    resize: 'none',
+                }}
+                value={(recipe.steps ?? []).join("\n")}
+                onChange={(e) =>
+                    setRecipe({ ...recipe, steps: e.target.value.split("\n") })
+                }
             />
 
             <TextField
                 fullWidth
-                multiline
-                rows={4}
-                label="Postup"
-                value={(recipe.steps ?? []).join("\n")}
+                label="YouTube video (URL)"
+                value={recipe.youtubeUrl || ""}
                 onChange={(e) =>
-                    setRecipe({ ...recipe, steps: e.target.value.split("\n") })
+                    setRecipe({ ...recipe, youtubeUrl: e.target.value })
                 }
                 sx={{ mb: 2 }}
             />
@@ -123,7 +152,17 @@ export function EditRecipe() {
                 Změnit obrázek
                 <input type="file" hidden onChange={handleImage} />
             </Button>
-            {recipe.image && <img src={recipe.image} alt="preview" width={200} />}
+
+            {recipe.image && (
+                <Box sx={{ mb: 3 }}>
+                    <img
+                        src={recipe.image}
+                        alt="preview"
+                        width={200}
+                        style={{ borderRadius: 4, marginTop: 8 }}
+                    />
+                </Box>
+            )}
 
             <Box mt={2}>
                 <Button variant="contained" color="primary" onClick={handleSave}>

@@ -11,8 +11,47 @@ export type RecipeFilterProps = {
     hiddenSections?: Sections[];
 };
 
-const DIET_ROOT_SLUGS = ["dieta", "diet", "diets"];
-const SEASON_ROOT_SLUGS = ["sezona", "sezóna", "season", "seasons"];
+type FilterSectionProps = {
+    title?: string;
+    options: Category[];
+    selected: string[];
+    onToggle: (slug: string) => void;
+    nested?: boolean;
+};
+
+function FilterSection({ title, options, selected, onToggle, nested }: FilterSectionProps) {
+    if (options.length === 0) return null;
+
+    return (
+        <Box sx={{ mb: 2 }}>
+            {title && (
+                <>
+                    <Divider sx={{ my: 2 }} />
+                    <Typography fontWeight="bold">{title}</Typography>
+                </>
+            )}
+            {options.map((opt) => (
+                <Checkbox
+                    key={opt.id}
+                    label={opt.name}
+                    checked={selected.includes(opt.slug)}
+                    onChange={() => onToggle(opt.slug)}
+                    sx={nested ? { pl: 2 } : undefined}
+                />
+            ))}
+        </Box>
+    );
+}
+
+function isDietCategory(cat: Category) {
+    return ["dieta", "diet", "diety"].includes(cat.slug.toLowerCase()) ||
+        cat.name.toLowerCase().includes("dieta");
+}
+
+function isSeasonCategory(cat: Category) {
+    return ["sezona", "sezóna", "season", "seasons"].includes(cat.slug.toLowerCase()) ||
+        cat.name.toLowerCase().includes("období");
+}
 
 export function RecipeFilter({
                                  filters,
@@ -25,17 +64,15 @@ export function RecipeFilter({
         getCategories().then(setCategories);
     }, []);
 
-    const isHidden = (s: Sections) => hiddenSections.includes(s);
+    const isHidden = (section: Sections) => hiddenSections.includes(section);
 
-    const roots = useMemo(
-        () => categories.filter((c) => !c.parentId),
-        [categories]
-    );
+    const roots = useMemo(() => categories.filter((c) => !c.parentId), [categories]);
     const childrenOf = (parentId: string) =>
         categories.filter((c) => c.parentId === parentId);
 
-    const dietRoot = roots.find((r) => DIET_ROOT_SLUGS.includes(r.slug));
-    const seasonRoot = roots.find((r) => SEASON_ROOT_SLUGS.includes(r.slug));
+    const dietRoot = roots.find(isDietCategory);
+    const seasonRoot = roots.find(isSeasonCategory);
+
     const mealRoots = roots.filter(
         (r) => r.id !== dietRoot?.id && r.id !== seasonRoot?.id
     );
@@ -46,57 +83,33 @@ export function RecipeFilter({
                 Filtrovat recepty
             </Typography>
 
-            {/* Jídla = všechny kořeny kromě dieta/sezóna */}
             {!isHidden("mealType") &&
                 mealRoots.map((parent) => (
-                    <Box key={parent.id} sx={{ mb: 2 }}>
-                        <Checkbox
-                            label={parent.name}
-                            checked={filters.mealType.includes(parent.slug)}
-                            onChange={() => onFilterChange("mealType", parent.slug)}
-                        />
-                        {childrenOf(parent.id).map((child) => (
-                            <Checkbox
-                                key={child.id}
-                                label={child.name}
-                                checked={filters.mealType.includes(child.slug)}
-                                onChange={() => onFilterChange("mealType", child.slug)}
-                                sx={{ pl: 2 }}
-                            />
-                        ))}
-                        <Divider sx={{ mt: 1 }} />
-                    </Box>
+                    <FilterSection
+                        key={parent.id}
+                        options={[parent, ...childrenOf(parent.id)]}
+                        selected={filters.mealType}
+                        onToggle={(slug) => onFilterChange("mealType", slug)}
+                        nested={false}
+                    />
                 ))}
 
-            {/* Diety = děti kořene 'dieta' (pokud existuje) */}
             {!isHidden("diet") && dietRoot && (
-                <Box sx={{ mb: 2 }}>
-                    <Typography fontWeight="bold">{dietRoot.name}</Typography>
-                    {childrenOf(dietRoot.id).map((d) => (
-                        <Checkbox
-                            key={d.id}
-                            label={d.name}
-                            checked={filters.diet.includes(d.slug)}
-                            onChange={() => onFilterChange("diet", d.slug)}
-                        />
-                    ))}
-                    <Divider sx={{ mt: 1 }} />
-                </Box>
+                <FilterSection
+                    title={dietRoot.name}
+                    options={childrenOf(dietRoot.id)}
+                    selected={filters.diet}
+                    onToggle={(slug) => onFilterChange("diet", slug)}
+                />
             )}
 
             {!isHidden("season") && seasonRoot && (
-                <Box sx={{ mb: 2 }}>
-                    <Typography fontWeight="bold">{seasonRoot.name}</Typography>
-                    {childrenOf(seasonRoot.id).map((s) => (
-                        <Checkbox
-                            key={s.id}
-                            label={s.name}
-                            checked={filters.season.includes(s.slug)}
-                            onChange={() => onFilterChange("season", s.slug)}
-                        />
-                    ))}
-                    <Divider sx={{ mt: 1 }} />
-                </Box>
+                <FilterSection
+                    title={seasonRoot.name}
+                    options={childrenOf(seasonRoot.id)}
+                    selected={filters.season}
+                    onToggle={(slug) => onFilterChange("season", slug)}
+                />
             )}
         </Box>
     );

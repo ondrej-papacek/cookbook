@@ -10,6 +10,7 @@ export type Recipe = {
     steps: string[];
     tags: string[];
     image?: string;
+    youtubeUrl?: string;
 };
 
 export async function getRecipes(): Promise<Recipe[]> {

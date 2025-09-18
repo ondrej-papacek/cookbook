@@ -13,6 +13,7 @@ import { Button } from "../components/UI/Button";
 import { uploadImage } from "../services/cloudinary";
 import { getCategories, type Category } from "../api/categories";
 import { createRecipe } from "../api/recipes";
+import TextareaAutosize from '@mui/material/TextareaAutosize';
 
 export function AddRecipe() {
     const [name, setName] = useState("");
@@ -21,6 +22,7 @@ export function AddRecipe() {
     const [ingredients, setIngredients] = useState("");
     const [steps, setSteps] = useState("");
     const [image, setImage] = useState<string | undefined>(undefined);
+    const [youtubeUrl, setYoutubeUrl] = useState("");
 
     useEffect(() => {
         getCategories().then(setCategories);
@@ -41,6 +43,11 @@ export function AddRecipe() {
         categories.filter((c) => c.parentId === parentId);
 
     const handleSubmit = async () => {
+        if (youtubeUrl && !youtubeUrl.includes("youtube.com/watch?v=")) {
+            alert("Zadej prosím platnou YouTube URL.");
+            return;
+        }
+
         try {
             await createRecipe({
                 name,
@@ -49,6 +56,7 @@ export function AddRecipe() {
                 steps: steps.split("\n").filter(Boolean),
                 tags: [],
                 image,
+                youtubeUrl,
             });
             alert("Recept byl přidán!");
             setName("");
@@ -56,6 +64,7 @@ export function AddRecipe() {
             setIngredients("");
             setSteps("");
             setImage(undefined);
+            setYoutubeUrl("");
         } catch (err) {
             console.error(err);
             alert("Nepodařilo se uložit recept.");
@@ -103,23 +112,49 @@ export function AddRecipe() {
                 </Select>
             </FormControl>
 
-            <TextField
-                fullWidth
-                multiline
-                rows={4}
-                label="Ingredience (každá na nový řádek)"
+            <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Ingredience (každá na nový řádek)
+            </Typography>
+            <TextareaAutosize
+                minRows={3}
+                style={{
+                    width: '100%',
+                    fontSize: '1rem',
+                    fontFamily: 'inherit',
+                    padding: '16.5px 14px',
+                    borderRadius: 4,
+                    border: '1px solid #ccc',
+                    resize: 'none',
+                    marginBottom: '1rem',
+                }}
                 value={ingredients}
                 onChange={(e) => setIngredients(e.target.value)}
-                sx={{ mb: 2 }}
+            />
+
+            <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Postup (každý krok na nový řádek)
+            </Typography>
+            <TextareaAutosize
+                minRows={3}
+                style={{
+                    width: '100%',
+                    fontSize: '1rem',
+                    fontFamily: 'inherit',
+                    padding: '16.5px 14px',
+                    borderRadius: 4,
+                    border: '1px solid #ccc',
+                    resize: 'none',
+                    marginBottom: '1rem',
+                }}
+                value={steps}
+                onChange={(e) => setSteps(e.target.value)}
             />
 
             <TextField
                 fullWidth
-                multiline
-                rows={4}
-                label="Postup (každý krok na nový řádek)"
-                value={steps}
-                onChange={(e) => setSteps(e.target.value)}
+                label="YouTube video (URL)"
+                value={youtubeUrl}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
                 sx={{ mb: 2 }}
             />
 

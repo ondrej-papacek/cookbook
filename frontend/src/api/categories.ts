@@ -28,7 +28,7 @@ export async function createCategory(data: {
 
 export async function updateCategory(
     id: string,
-    data: Partial<Omit<Category, "id" | "slug">>
+    data: Partial<Omit<Category, "id">>
 ): Promise<Category> {
     const res = await axios.patch(`${API_URL}/api/categories/${id}`, data);
     return res.data;

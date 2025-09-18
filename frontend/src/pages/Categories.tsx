@@ -28,7 +28,6 @@ import {
     type DropResult,
 } from "@hello-pangea/dnd";
 
-
 function slugify(text: string): string {
     return text
         .toLowerCase()
@@ -94,10 +93,14 @@ export function Categories() {
 
     const handleUpdate = async () => {
         if (!editing) return;
+
         await updateCategory(editing.id, {
             name: editing.name,
+            slug: editing.slug,
+            parentId: editing.parentId || null,
             description: editing.description,
         });
+
         setEditing(null);
         await refresh();
     };
@@ -248,6 +251,7 @@ export function Categories() {
             {editing && (
                 <Box sx={{ mt: 3 }}>
                     <Typography variant="h6">Upravit kategorii</Typography>
+
                     <TextField
                         fullWidth
                         label="Název"
@@ -255,6 +259,38 @@ export function Categories() {
                         onChange={(e) => setEditing({ ...editing, name: e.target.value })}
                         sx={{ mb: 2 }}
                     />
+
+                    <TextField
+                        fullWidth
+                        label="Slug"
+                        value={editing.slug}
+                        onChange={(e) => setEditing({ ...editing, slug: e.target.value })}
+                        sx={{ mb: 2 }}
+                    />
+
+                    <TextField
+                        select
+                        fullWidth
+                        label="Nadkategorie"
+                        value={editing.parentId ?? ""}
+                        onChange={(e) =>
+                            setEditing({
+                                ...editing,
+                                parentId: e.target.value || null,
+                            })
+                        }
+                        sx={{ mb: 2 }}
+                    >
+                        <MenuItem value="">Žádná</MenuItem>
+                        {categories
+                            .filter((cat) => cat.id !== editing.id)
+                            .map((cat) => (
+                                <MenuItem key={cat.id} value={cat.id}>
+                                    {cat.name}
+                                </MenuItem>
+                            ))}
+                    </TextField>
+
                     <Button variant="contained" onClick={handleUpdate}>
                         Uložit změny
                     </Button>

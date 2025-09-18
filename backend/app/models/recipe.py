@@ -8,6 +8,7 @@ class Recipe(BaseModel):
     ingredients: List[str]
     steps: List[str]
     image: Optional[str] = None
+    youtubeUrl: Optional[str] = None
 
 class RecipeWithID(Recipe):
     id: str
