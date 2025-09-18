@@ -94,10 +94,16 @@ export function Categories() {
     const handleUpdate = async () => {
         if (!editing) return;
 
+        const parentSlug = editing.parentId
+            ? categories.find((c) => c.id === editing.parentId)?.slug
+            : undefined;
+
+        const fallbackSlug = slugifyWithParent(editing.name, parentSlug);
+
         await updateCategory(editing.id, {
             name: editing.name,
-            slug: editing.slug,
-            parentId: editing.parentId || null,
+            slug: editing.slug?.trim() || fallbackSlug,
+            parentId: editing.parentId ?? null,
             description: editing.description,
         });
 
