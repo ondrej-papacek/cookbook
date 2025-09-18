@@ -1,6 +1,6 @@
 ﻿from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Union
 from app.utils.firebase import get_db
 from app.models.category import Category
 from firebase_admin import firestore
@@ -17,7 +17,7 @@ class ReorderPayload(BaseModel):
 class CategoryUpdate(BaseModel):
     name: Optional[str]
     slug: Optional[str]
-    description: Optional[str] = None
+    description: Union[str, None] = None
     order: Optional[int]
     parentId: Optional[str | None]
     type: Optional[str] = None
