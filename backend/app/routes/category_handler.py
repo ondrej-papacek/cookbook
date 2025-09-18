@@ -17,7 +17,7 @@ class ReorderPayload(BaseModel):
 class CategoryUpdate(BaseModel):
     name: Optional[str]
     slug: Optional[str]
-    description: Optional[str]
+    description: Optional[str] = None
     order: Optional[int]
     parentId: Optional[str | None]
     type: Optional[str] = None
