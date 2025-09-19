@@ -15,11 +15,11 @@ class ReorderPayload(BaseModel):
     items: List[ReorderItem]
 
 class CategoryUpdate(BaseModel):
-    name: Optional[str]
-    slug: Optional[str]
-    description: Union[str, None] = None
-    order: Optional[int]
-    parentId: Optional[str | None]
+    name: Optional[str] = None
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    order: Optional[int] = None
+    parentId: Optional[str] = None
     type: Optional[str] = None
 
 @router.get("/categories")
@@ -64,9 +64,15 @@ def update_category(id: str, payload: CategoryUpdate):
     doc_ref = db.collection("categories").document(id)
     if not doc_ref.get().exists:
         raise HTTPException(status_code=404, detail="Category not found")
-    doc_ref.update(payload.dict(exclude_unset=True))
+
+    update_data = payload.dict(exclude_unset=True, exclude_none=True)
+
+    print("Update payload for Firestore:", update_data)
+
+    doc_ref.update(update_data)
     new_doc = doc_ref.get()
     return {**new_doc.to_dict(), "id": new_doc.id}
+
 
 @router.delete("/categories/{id}", status_code=204)
 def delete_category(id: str):
