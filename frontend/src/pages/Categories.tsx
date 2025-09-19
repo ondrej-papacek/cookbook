@@ -100,12 +100,16 @@ export function Categories() {
 
         const newSlug = slugifyWithParent(editing.name, parentSlug);
 
-        await updateCategory(editing.id, {
+        const payload = {
             name: editing.name,
             slug: newSlug,
             parentId: editing.parentId ?? null,
             description: editing.description,
-        });
+        };
+
+        console.log("Update payload:", payload);
+
+        await updateCategory(editing.id, payload);
 
         setEditing(null);
         await refresh();
@@ -160,7 +164,9 @@ export function Categories() {
                     label="Nadkategorie"
                     size="small"
                     value={parentId ?? ""}
-                    onChange={(e) => setParentId(e.target.value || null)}
+                    onChange={(e) =>
+                        setParentId(e.target.value === "" ? null : e.target.value)
+                    }
                     sx={{ minWidth: 200 }}
                 >
                     <MenuItem value="">Žádná</MenuItem>
@@ -282,7 +288,7 @@ export function Categories() {
                         onChange={(e) =>
                             setEditing({
                                 ...editing,
-                                parentId: e.target.value || null,
+                                parentId: e.target.value === "" ? null : e.target.value,
                             })
                         }
                         sx={{ mb: 2 }}
