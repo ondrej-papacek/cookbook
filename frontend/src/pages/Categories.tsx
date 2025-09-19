@@ -98,11 +98,11 @@ export function Categories() {
             ? categories.find((c) => c.id === editing.parentId)?.slug
             : undefined;
 
-        const fallbackSlug = slugifyWithParent(editing.name, parentSlug);
+        const newSlug = slugifyWithParent(editing.name, parentSlug);
 
         await updateCategory(editing.id, {
             name: editing.name,
-            slug: editing.slug?.trim() || fallbackSlug,
+            slug: newSlug,
             parentId: editing.parentId ?? null,
             description: editing.description,
         });
