@@ -5,6 +5,7 @@ import { RecipeCard } from "../components/RecipeCard";
 import { useRecipes } from "../hooks/useRecipes";
 import { getCategories, type Category } from "../api/categories";
 import { Button } from "../components/UI/Button";
+import { Divider } from "@mui/material";
 
 type Filters = {
     mealType: string[];
@@ -110,6 +111,9 @@ export function AllRecipes() {
                         )}
                         image={randomRecipe.image}
                     />
+                    <Box sx={{ my: 3 }}>
+                        <Divider sx={{ my: 3 }} />
+                    </Box>
                 </Box>
             )}
 
@@ -153,5 +157,6 @@ export function AllRecipes() {
                 </Box>
             </Box>
         </Container>
+
     );
 }
