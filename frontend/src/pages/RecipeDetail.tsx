@@ -50,7 +50,13 @@ export function RecipeDetail() {
         [categories]
     );
 
-    if (!recipe) return <p>Načítám...</p>;
+    if (!recipe) {
+        return (
+            <Box sx={{ maxWidth: 800, mx: "auto", px: 2, py: 4 }}>
+                <Typography>Načítám...</Typography>
+            </Box>
+        );
+    }
 
     const categoryNames = (recipe.categories ?? []).map(
         (s: string) => slugToName.get(s) || s
