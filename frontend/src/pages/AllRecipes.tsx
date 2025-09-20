@@ -76,7 +76,12 @@ export function AllRecipes() {
             setRandomRecipe(null);
             return;
         }
-        const random = filtered[Math.floor(Math.random() * filtered.length)];
+
+        let random;
+        do {
+            random = filtered[Math.floor(Math.random() * filtered.length)];
+        } while (filtered.length > 1 && random.id === randomRecipe?.id);
+
         setRandomRecipe(random);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
