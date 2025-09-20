@@ -1,11 +1,10 @@
 ﻿import { useEffect, useMemo, useState } from "react";
-import { Box, Container, Pagination, Typography, Stack } from "@mui/material";
+import { Box, Container, Pagination, Typography, Stack, Divider } from "@mui/material";
 import { RecipeFilter } from "../components/RecipeFilter";
 import { RecipeCard } from "../components/RecipeCard";
 import { useRecipes } from "../hooks/useRecipes";
 import { getCategories, type Category } from "../api/categories";
 import { Button } from "../components/UI/Button";
-import { Divider } from "@mui/material";
 
 type Filters = {
     mealType: string[];
@@ -103,17 +102,17 @@ export function AllRecipes() {
                     <Typography variant="h6" gutterBottom>
                         Tip na dnešní vaření:
                     </Typography>
-                    <RecipeCard
-                        id={randomRecipe.id}
-                        name={randomRecipe.name}
-                        categories={(randomRecipe.categories ?? []).map(
-                            (s: string) => slugToName.get(s) || s
-                        )}
-                        image={randomRecipe.image}
-                    />
-                    <Box sx={{ my: 3 }}>
-                        <Divider sx={{ my: 3 }} />
+                    <Box sx={{ display: "flex", justifyContent: "center" }}>
+                        <RecipeCard
+                            id={randomRecipe.id}
+                            name={randomRecipe.name}
+                            categories={(randomRecipe.categories ?? []).map(
+                                (s: string) => slugToName.get(s) || s
+                            )}
+                            image={randomRecipe.image}
+                        />
                     </Box>
+                    <Divider sx={{ my: 3 }} />
                 </Box>
             )}
 
@@ -157,6 +156,5 @@ export function AllRecipes() {
                 </Box>
             </Box>
         </Container>
-
     );
 }
