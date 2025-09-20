@@ -23,6 +23,11 @@ export async function getRecipe(id: string): Promise<Recipe> {
     return res.data;
 }
 
+export async function getRandomRecipe(): Promise<Recipe> {
+    const res = await axios.get(`${API_URL}/api/recipes/random`);
+    return res.data;
+}
+
 export async function createRecipe(data: Omit<Recipe, "id">): Promise<Recipe> {
     const res = await axios.post(`${API_URL}/api/recipes`, data);
     return res.data;

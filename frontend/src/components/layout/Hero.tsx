@@ -25,7 +25,6 @@ export function Hero() {
                     mt: "-64px",
                 }}
             >
-                {/* Dark overlay */}
                 <Box
                     sx={{
                         position: "absolute",
@@ -50,7 +49,7 @@ export function Hero() {
                 >
                     <Box
                         sx={{
-                            bgcolor: "rgba(0, 0, 0, 0.6)",
+                            bgcolor: "rgba(64, 31, 10, 0.8)",
                             borderRadius: 2,
                             px: { xs: 2, md: 4 },
                             py: { xs: 2, md: 3 },

@@ -1,9 +1,10 @@
 ﻿import { useEffect, useMemo, useState } from "react";
-import { Box, Container, Pagination, Typography } from "@mui/material";
+import { Box, Container, Pagination, Typography, Stack } from "@mui/material";
 import { RecipeFilter } from "../components/RecipeFilter";
 import { RecipeCard } from "../components/RecipeCard";
 import { useRecipes } from "../hooks/useRecipes";
 import { getCategories, type Category } from "../api/categories";
+import { Button } from "../components/UI/Button";
 
 type Filters = {
     mealType: string[];
@@ -22,6 +23,7 @@ export function AllRecipes() {
         season: [],
     });
     const [page, setPage] = useState(1);
+    const [randomRecipe, setRandomRecipe] = useState<any | null>(null);
 
     useEffect(() => {
         getCategories().then(setCategories);
@@ -69,13 +71,47 @@ export function AllRecipes() {
         });
     };
 
+    const handleRandomRecipe = () => {
+        if (filtered.length === 0) {
+            setRandomRecipe(null);
+            return;
+        }
+        const random = filtered[Math.floor(Math.random() * filtered.length)];
+        setRandomRecipe(random);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
     if (loading) return <p>Načítám...</p>;
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
-            <Typography variant="h4" gutterBottom>
-                Všechny recepty
-            </Typography>
+            <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ mb: 3 }}
+            >
+                <Typography variant="h4">Všechny recepty</Typography>
+                <Button variant="contained" onClick={handleRandomRecipe}>
+                    Navrhni recept
+                </Button>
+            </Stack>
+
+            {randomRecipe && (
+                <Box sx={{ mb: 4 }}>
+                    <Typography variant="h6" gutterBottom>
+                        Tip na dnešní vaření:
+                    </Typography>
+                    <RecipeCard
+                        id={randomRecipe.id}
+                        name={randomRecipe.name}
+                        categories={(randomRecipe.categories ?? []).map(
+                            (s: string) => slugToName.get(s) || s
+                        )}
+                        image={randomRecipe.image}
+                    />
+                </Box>
+            )}
 
             <Box
                 sx={{

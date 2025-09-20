@@ -1,6 +1,7 @@
 ﻿from fastapi import APIRouter, HTTPException
 from app.models.recipe import Recipe, RecipeWithID
 from app.utils.firebase import get_db
+import random
 
 router = APIRouter()
 
@@ -33,6 +34,16 @@ def search_recipes(q: str):
             results.append({**data, "id": doc.id})
 
     return results
+
+@router.get("/recipes/random", response_model=RecipeWithID)
+def get_random_recipe():
+    db = get_db()
+    docs = list(db.collection("recipes").stream())
+    if not docs:
+        raise HTTPException(status_code=404, detail="No recipes found")
+
+    chosen = random.choice(docs)
+    return {**chosen.to_dict(), "id": chosen.id}
 
 @router.get("/recipes/{recipe_id}", response_model=RecipeWithID)
 def get_recipe(recipe_id: str):
