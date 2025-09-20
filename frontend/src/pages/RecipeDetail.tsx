@@ -9,8 +9,8 @@ import {
     Stack,
     TextField,
     Snackbar,
-    Alert,
 } from "@mui/material";
+import MuiAlert from "@mui/material/Alert";
 import EditIcon from "@mui/icons-material/Edit";
 import { getCategories, type Category } from "../api/categories";
 import { getRecipe } from "../api/recipes";
@@ -89,7 +89,6 @@ export function RecipeDetail() {
         return () => document.removeEventListener("visibilitychange", handleVisibility);
     }, [cooking]);
 
-
     // --- Timer ---
     const handleStart = async () => {
         const total = hours * 3600 + minutes * 60 + seconds;
@@ -111,7 +110,7 @@ export function RecipeDetail() {
 
                     // Vibrace (Android)
                     if (navigator.vibrate) {
-                        navigator.vibrate([300, 150, 300]); // vibruje: 300ms, pauza, 300ms
+                        navigator.vibrate([300, 150, 300]);
                     }
 
                     return 0;
@@ -333,9 +332,14 @@ export function RecipeDetail() {
                 onClose={() => setSnackbarOpen(false)}
                 anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
             >
-                <Alert severity="success" onClose={() => setSnackbarOpen(false)}>
+                <MuiAlert
+                    elevation={6}
+                    variant="filled"
+                    severity="success"
+                    onClose={() => setSnackbarOpen(false)}
+                >
                     Čas vypršel – Hotovo!
-                </Alert>
+                </MuiAlert>
             </Snackbar>
         </Box>
     );
