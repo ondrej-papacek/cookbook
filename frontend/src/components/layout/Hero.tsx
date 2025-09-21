@@ -18,9 +18,9 @@ export function Hero() {
                     color: "white",
                     textAlign: "center",
                     backgroundImage: `url("/cookbook-1440.png")`,
-                    backgroundSize: "cover",
+                    backgroundSize: "contain",
                     backgroundRepeat: "no-repeat",
-                    backgroundPosition: "top center",
+                    backgroundPosition: "center",
                     height: { xs: "75vh", md: "75vh" },
                     mt: "-64px",
                 }}
