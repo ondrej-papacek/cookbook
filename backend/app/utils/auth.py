@@ -1,6 +1,8 @@
-﻿from fastapi import Depends, HTTPException
+﻿import logging, traceback
+from fastapi import Depends, HTTPException
 from firebase_admin import auth
-import traceback
+
+logger = logging.getLogger("uvicorn.error")
 
 def verify_token(authorization: str = Depends(lambda: None)):
     if not authorization:
@@ -14,6 +16,6 @@ def verify_token(authorization: str = Depends(lambda: None)):
         decoded_token = auth.verify_id_token(token)
         return decoded_token
     except Exception as e:
-        print("Token verification failed:", e)
-        traceback.print_exc()
+        logger.error("Token verification failed: %s", e)
+        logger.exception(e)
         raise HTTPException(status_code=401, detail="Invalid or expired token")
