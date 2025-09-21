@@ -1,9 +1,12 @@
-﻿from fastapi import APIRouter, HTTPException
+﻿from fastapi import APIRouter, Depends, HTTPException
 from app.models.recipe import Recipe, RecipeWithID
+from app.utils.auth import verify_token
 from app.utils.firebase import get_db
 import random
 
-router = APIRouter()
+router = APIRouter(
+    dependencies=[Depends(verify_token)]
+)
 
 
 @router.get("/recipes", response_model=list[RecipeWithID])

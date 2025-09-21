@@ -5,19 +5,28 @@ import {
     Box,
     Collapse,
     Container,
+    Button as MuiButton,
 } from "@mui/material";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { SearchBar } from "./SearchBar";
 import { Button } from "../UI/Button";
 import { CategoryNavbar } from "./CategoryNavbar";
+import { signOut } from "firebase/auth";
+import { auth } from "../../firebase";
 
 export function Navbar() {
     const [catsOpen, setCatsOpen] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
 
     useEffect(() => {
         setCatsOpen(false);
     }, [location.pathname]);
+
+    const handleLogout = async () => {
+        await signOut(auth);
+        navigate("/login");
+    };
 
     return (
         <AppBar
@@ -92,6 +101,15 @@ export function Navbar() {
                     <Box sx={{ ml: 2, flexGrow: 1, maxWidth: 400 }}>
                         <SearchBar />
                     </Box>
+
+                    {/* Odhlášení tlačítko */}
+                    <MuiButton
+                        color="inherit"
+                        onClick={handleLogout}
+                        sx={{ color: "#401f0a" }}
+                    >
+                        Odhlásit se
+                    </MuiButton>
                 </Toolbar>
 
                 <Collapse in={catsOpen} unmountOnExit>

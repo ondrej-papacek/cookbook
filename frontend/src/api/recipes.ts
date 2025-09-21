@@ -1,6 +1,7 @@
-﻿import axios from "axios";
+﻿// src/api/recipes.ts
+import api from "./axios";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_PREFIX = "/api";
 
 export type Recipe = {
     id: string;
@@ -14,22 +15,22 @@ export type Recipe = {
 };
 
 export async function getRecipes(): Promise<Recipe[]> {
-    const res = await axios.get(`${API_URL}/api/recipes`);
+    const res = await api.get(`${API_PREFIX}/recipes`);
     return res.data;
 }
 
 export async function getRecipe(id: string): Promise<Recipe> {
-    const res = await axios.get(`${API_URL}/api/recipes/${id}`);
+    const res = await api.get(`${API_PREFIX}/recipes/${id}`);
     return res.data;
 }
 
 export async function getRandomRecipe(): Promise<Recipe> {
-    const res = await axios.get(`${API_URL}/api/recipes/random`);
+    const res = await api.get(`${API_PREFIX}/recipes/random`);
     return res.data;
 }
 
 export async function createRecipe(data: Omit<Recipe, "id">): Promise<Recipe> {
-    const res = await axios.post(`${API_URL}/api/recipes`, data);
+    const res = await api.post(`${API_PREFIX}/recipes`, data);
     return res.data;
 }
 
@@ -37,17 +38,17 @@ export async function updateRecipe(
     id: string,
     data: Partial<Omit<Recipe, "id">>
 ): Promise<Recipe> {
-    const res = await axios.patch(`${API_URL}/api/recipes/${id}`, data);
+    const res = await api.patch(`${API_PREFIX}/recipes/${id}`, data);
     return res.data;
 }
 
 export async function deleteRecipe(id: string): Promise<void> {
-    await axios.delete(`${API_URL}/api/recipes/${id}`);
+    await api.delete(`${API_PREFIX}/recipes/${id}`);
 }
 
 export async function searchRecipes(q: string): Promise<Recipe[]> {
-    const res = await axios.get(
-        `${API_URL}/api/recipes/search?q=${encodeURIComponent(q)}`
-    );
+    const res = await api.get(`${API_PREFIX}/recipes/search`, {
+        params: { q },
+    });
     return res.data;
 }

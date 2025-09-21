@@ -7,21 +7,32 @@ import { EditRecipe } from "./pages/EditRecipe";
 import { RecipeDetail } from "./pages/RecipeDetail";
 import { CategoryDetail } from "./pages/CategoryDetail";
 import { AllRecipes } from "./pages/AllRecipes";
+import Login from "./pages/Login";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 export default function App() {
     return (
         <BrowserRouter>
-            <Layout>
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/categories" element={<Categories />} />
-                    <Route path="/categories/:slug" element={<CategoryDetail />} />
-                    <Route path="/recepty" element={<AllRecipes />} />
-                    <Route path="/recipes/:id" element={<RecipeDetail />} />
-                    <Route path="/add" element={<AddRecipe />} />
-                    <Route path="/edit/:id" element={<EditRecipe />} />
-                </Routes>
-            </Layout>
+            <Routes>
+                <Route path="/login" element={<Login />} />
+
+                <Route
+                    path="/"
+                    element={
+                        <ProtectedRoute>
+                            <Layout />
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route index element={<Home />} />
+                    <Route path="categories" element={<Categories />} />
+                    <Route path="categories/:slug" element={<CategoryDetail />} />
+                    <Route path="recepty" element={<AllRecipes />} />
+                    <Route path="recipes/:id" element={<RecipeDetail />} />
+                    <Route path="add" element={<AddRecipe />} />
+                    <Route path="edit/:id" element={<EditRecipe />} />
+                </Route>
+            </Routes>
         </BrowserRouter>
     );
 }

@@ -1,6 +1,6 @@
-﻿import axios from "axios";
+﻿import api from "./axios";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_PREFIX = "/api";
 
 export type Category = {
     id: string;
@@ -12,7 +12,7 @@ export type Category = {
 };
 
 export async function getCategories(): Promise<Category[]> {
-    const res = await axios.get(`${API_URL}/api/categories`);
+    const res = await api.get(`${API_PREFIX}/categories`);
     return res.data;
 }
 
@@ -22,7 +22,7 @@ export async function createCategory(data: {
     description?: string;
     parentId?: string | null;
 }): Promise<Category> {
-    const res = await axios.post(`${API_URL}/api/categories`, data);
+    const res = await api.post(`${API_PREFIX}/categories`, data);
     return res.data;
 }
 
@@ -30,22 +30,16 @@ export async function updateCategory(
     id: string,
     data: Partial<Category>
 ): Promise<Category> {
-    const res = await axios.patch(`${API_URL}/api/categories/${id}`, data);
+    const res = await api.patch(`${API_PREFIX}/categories/${id}`, data);
     return res.data;
 }
 
 export async function deleteCategory(id: string): Promise<void> {
-    await axios.delete(`${API_URL}/api/categories/${id}`);
+    await api.delete(`${API_PREFIX}/categories/${id}`);
 }
 
 export async function reorderCategories(
     items: { id: string; order: number }[]
 ): Promise<void> {
-    await axios.patch(
-        `${API_URL}/api/categories/reorder`,
-        { items },
-        {
-            headers: { "Content-Type": "application/json" },
-        }
-    );
+    await api.patch(`${API_PREFIX}/categories/reorder`, { items });
 }

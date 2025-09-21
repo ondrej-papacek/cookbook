@@ -1,11 +1,14 @@
-﻿from fastapi import APIRouter, HTTPException
+﻿from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from app.utils.auth import verify_token
 from typing import List, Optional, Union
 from app.utils.firebase import get_db
 from app.models.category import Category
 from firebase_admin import firestore
 
-router = APIRouter()
+router = APIRouter(
+    dependencies=[Depends(verify_token)]
+)
 
 class ReorderItem(BaseModel):
     id: str
