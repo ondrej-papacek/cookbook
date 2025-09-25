@@ -17,14 +17,22 @@ export function Hero() {
                     position: "relative",
                     color: "white",
                     textAlign: "center",
-                    backgroundImage: `url("/cookbook-1440.png")`,
-                    backgroundSize: "contain",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center",
-                    height: { xs: "75vh", md: "75vh" },
                     mt: "-64px",
+                    height: "60vh",
+                    overflow: "hidden",
                 }}
             >
+                <Box
+                    component="img"
+                    src="/cookbook-1440.png"
+                    alt="Cookbook"
+                    sx={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                    }}
+                />
+
                 <Box
                     sx={{
                         position: "absolute",
@@ -32,7 +40,7 @@ export function Hero() {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        bgcolor: "rgba(0,0,0,0.3)",
+                        bgcolor: "rgba(0,0,0,0.35)",
                         zIndex: 1,
                     }}
                 />
@@ -40,20 +48,23 @@ export function Hero() {
                 <Container
                     sx={{
                         position: "absolute",
-                        top: "70%",
+                        bottom: "10%",
                         left: "50%",
-                        transform: "translate(-50%, -50%)",
+                        transform: "translateX(-50%)",
                         zIndex: 2,
                         textAlign: "center",
+                        px: 0,
+                        maxWidth: "100%",
                     }}
                 >
                     <Box
                         sx={{
-                            bgcolor: "rgba(64, 31, 10, 0.8)",
-                            borderRadius: 2,
-                            px: { xs: 2, md: 4 },
-                            py: { xs: 2, md: 3 },
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                            bgcolor: "rgba(64, 31, 10, 0.85)",
+                            px: { xs: 4, md: 10 },
+                            py: { xs: 3, md: 4 },
+                            boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
+                            width: "100%",
+                            borderRadius: 3,
                         }}
                     >
                         <Typography
