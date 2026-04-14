@@ -13,7 +13,7 @@ export function Button(props: RouterButtonProps) {
             {...props}
             sx={{
                 textTransform: "none",
-                borderRadius: 2,
+                borderRadius: "10px",
                 px: 2,
                 ...props.sx,
             }}

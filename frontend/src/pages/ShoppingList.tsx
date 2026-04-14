@@ -7,6 +7,7 @@ import {
     Typography,
     Stack,
 } from "@mui/material";
+import { RevealOnScroll } from "../components/UI/RevealOnScroll";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { Link } from "react-router-dom";
@@ -71,10 +72,11 @@ export function ShoppingList() {
                 </Stack>
             </Box>
 
-            {Object.entries(groups).map(([recipeId, groupItems]) => {
+            {Object.entries(groups).map(([recipeId, groupItems], gi) => {
                 const recipeName = groupItems[0].recipeName;
                 return (
-                    <Box key={recipeId} sx={{ mb: 3 }}>
+                    <RevealOnScroll key={recipeId} delay={gi * 0.06}>
+                    <Box sx={{ mb: 3 }}>
                         <Box
                             sx={{
                                 display: "flex",
@@ -140,6 +142,7 @@ export function ShoppingList() {
                             </Box>
                         ))}
                     </Box>
+                    </RevealOnScroll>
                 );
             })}
         </Container>

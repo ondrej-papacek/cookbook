@@ -13,6 +13,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import TuneIcon from "@mui/icons-material/Tune";
 import { RecipeFilter } from "../components/RecipeFilter";
 import { RecipeCard } from "../components/RecipeCard";
+import { RevealOnScroll } from "../components/UI/RevealOnScroll";
+import { RecipeGridSkeleton } from "../components/UI/RecipeGridSkeleton";
 import { useRecipes } from "../hooks/useRecipes";
 import { getCategories, type Category } from "../api/categories";
 import { Button } from "../components/UI/Button";
@@ -106,7 +108,7 @@ export function AllRecipes() {
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    if (loading) return <p>Načítám...</p>;
+    if (loading) return <RecipeGridSkeleton count={12} />;
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -124,7 +126,6 @@ export function AllRecipes() {
                     Všechny recepty
                 </Typography>
                 <Stack direction="row" gap={1}>
-                    {/* Filter button – mobile only */}
                     <Button
                         variant="outlined"
                         onClick={() => setFilterOpen(true)}
@@ -220,17 +221,18 @@ export function AllRecipes() {
                             gap: 2,
                         }}
                     >
-                        {current.map((r) => (
-                            <RecipeCard
-                                key={r.id}
-                                id={r.id}
-                                name={r.name}
-                                categories={(r.categories ?? []).map(
-                                    (s) => slugToName.get(s) || s
-                                )}
-                                image={r.image}
-                                totalTime={(r.prepTime ?? 0) + (r.cookTime ?? 0) || undefined}
-                            />
+                        {current.map((r, i) => (
+                            <RevealOnScroll key={r.id} delay={i * 0.04}>
+                                <RecipeCard
+                                    id={r.id}
+                                    name={r.name}
+                                    categories={(r.categories ?? []).map(
+                                        (s) => slugToName.get(s) || s
+                                    )}
+                                    image={r.image}
+                                    totalTime={(r.prepTime ?? 0) + (r.cookTime ?? 0) || undefined}
+                                />
+                            </RevealOnScroll>
                         ))}
                     </Box>
 

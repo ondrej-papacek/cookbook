@@ -10,6 +10,7 @@ import {
     Snackbar,
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "./UI/Button";
 
 type Props = {
@@ -27,6 +28,7 @@ export function CookingMode({ recipe, onExit }: Props) {
 
     // Step navigation
     const [currentStep, setCurrentStep] = useState(0);
+    const [direction, setDirection] = useState(1);
     const [ingredientsOpen, setIngredientsOpen] = useState(false);
     const isLastStep = currentStep === steps.length - 1;
 
@@ -81,9 +83,29 @@ export function CookingMode({ recipe, onExit }: Props) {
         return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
     };
 
+    const goNext = () => {
+        if (isLastStep) {
+            onExit();
+        } else {
+            setDirection(1);
+            setCurrentStep((s) => s + 1);
+        }
+    };
+
+    const goPrev = () => {
+        setDirection(-1);
+        setCurrentStep((s) => s - 1);
+    };
+
     const progress = steps.length > 1
         ? (currentStep / (steps.length - 1)) * 100
         : 100;
+
+    const stepVariants = {
+        enter: (dir: number) => ({ opacity: 0, x: dir > 0 ? 80 : -80 }),
+        center: { opacity: 1, x: 0 },
+        exit: (dir: number) => ({ opacity: 0, x: dir > 0 ? -80 : 80 }),
+    };
 
     return (
         <Box
@@ -121,34 +143,47 @@ export function CookingMode({ recipe, onExit }: Props) {
                 <LinearProgress
                     variant="determinate"
                     value={progress}
-                    sx={{ flex: 1, height: 6, borderRadius: 3 }}
+                    sx={{ flex: 1, borderRadius: 3 }}
                 />
                 <Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>
                     {currentStep + 1}&nbsp;/&nbsp;{steps.length}
                 </Typography>
             </Box>
 
-            {/* ── Step text ── */}
+            {/* ── Step text with slide animation ── */}
             <Box
                 sx={{
                     flex: 1,
-                    overflow: "auto",
+                    overflow: "hidden",
                     display: "flex",
                     alignItems: "center",
                     px: { xs: 3, sm: 5 },
                     py: 3,
                 }}
             >
-                <Typography
-                    sx={{
-                        fontSize: { xs: "1.2rem", sm: "1.45rem" },
-                        lineHeight: 1.8,
-                        textAlign: "center",
-                        width: "100%",
-                    }}
-                >
-                    {steps[currentStep]}
-                </Typography>
+                <AnimatePresence mode="wait" custom={direction}>
+                    <motion.div
+                        key={currentStep}
+                        custom={direction}
+                        variants={stepVariants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        style={{ width: "100%" }}
+                    >
+                        <Typography
+                            sx={{
+                                fontSize: { xs: "1.2rem", sm: "1.45rem" },
+                                lineHeight: 1.8,
+                                textAlign: "center",
+                                width: "100%",
+                            }}
+                        >
+                            {steps[currentStep]}
+                        </Typography>
+                    </motion.div>
+                </AnimatePresence>
             </Box>
 
             {/* ── Timer section ── */}
@@ -212,7 +247,6 @@ export function CookingMode({ recipe, onExit }: Props) {
                                 sx={{ mt: 1.5 }}
                                 alignItems={{ xs: "stretch", sm: "center" }}
                             >
-                                {/* Three time fields — always side-by-side in their own row */}
                                 <Box sx={{ display: "flex", gap: 1 }}>
                                     <TextField
                                         type="number"
@@ -305,7 +339,7 @@ export function CookingMode({ recipe, onExit }: Props) {
                     fullWidth
                     variant="outlined"
                     disabled={currentStep === 0}
-                    onClick={() => setCurrentStep((s) => s - 1)}
+                    onClick={goPrev}
                     sx={{ height: 56, fontSize: "1rem" }}
                 >
                     ← Předchozí
@@ -314,13 +348,7 @@ export function CookingMode({ recipe, onExit }: Props) {
                     fullWidth
                     variant="contained"
                     color={isLastStep ? "success" : "primary"}
-                    onClick={() => {
-                        if (isLastStep) {
-                            onExit();
-                        } else {
-                            setCurrentStep((s) => s + 1);
-                        }
-                    }}
+                    onClick={goNext}
                     sx={{ height: 56, fontSize: "1rem" }}
                 >
                     {isLastStep ? "✓ Hotovo!" : "Další →"}

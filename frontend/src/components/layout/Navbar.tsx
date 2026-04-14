@@ -25,11 +25,20 @@ import { Button } from "../UI/Button";
 import { CategoryNavbar } from "./CategoryNavbar";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase";
+import { motion } from "framer-motion";
+
+const NAV_ITEMS = [
+    { label: "Domů", to: "/" },
+    { label: "Všechny recepty", to: "/recepty" },
+    { label: "Přidat recept", to: "/add" },
+    { label: "Jídelníček", to: "/plan" },
+];
 
 export function Navbar() {
     const [catsOpen, setCatsOpen] = useState(false);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [mobileCatsOpen, setMobileCatsOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
     const { uncheckedCount } = useShoppingListContext();
     const location = useLocation();
     const navigate = useNavigate();
@@ -40,10 +49,42 @@ export function Navbar() {
         setMobileCatsOpen(false);
     }, [location.pathname]);
 
+    useEffect(() => {
+        const handler = () => setScrolled(window.scrollY > 10);
+        window.addEventListener("scroll", handler, { passive: true });
+        return () => window.removeEventListener("scroll", handler);
+    }, []);
+
     const handleLogout = async () => {
         await signOut(auth);
         navigate("/login");
     };
+
+    const isActive = (path: string) =>
+        path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
+
+    const navLinkSx = (path: string) => ({
+        color: "#401f0a",
+        position: "relative" as const,
+        "&::after": {
+            content: '""',
+            position: "absolute",
+            bottom: 4,
+            left: "50%",
+            transform: isActive(path)
+                ? "translateX(-50%) scaleX(1)"
+                : "translateX(-50%) scaleX(0)",
+            transformOrigin: "center",
+            width: "60%",
+            height: 2,
+            bgcolor: "#401f0a",
+            borderRadius: 1,
+            transition: "transform 0.2s ease",
+        },
+        "&:hover::after": {
+            transform: "translateX(-50%) scaleX(1)",
+        },
+    });
 
     return (
         <AppBar
@@ -55,69 +96,65 @@ export function Navbar() {
                 WebkitBackdropFilter: "blur(12px)",
                 color: "#401f0a",
                 zIndex: (theme) => theme.zIndex.appBar + 1,
+                boxShadow: scrolled
+                    ? "0 2px 20px rgba(64,31,10,0.12)"
+                    : "none",
+                borderBottom: scrolled
+                    ? "none"
+                    : "1px solid rgba(64,31,10,0.06)",
+                transition: "box-shadow 0.3s ease, border-bottom 0.3s ease",
             }}
         >
             <Container maxWidth="lg">
                 <Toolbar sx={{ gap: 1 }}>
                     {/* Logo */}
-                    <Box
-                        component={Link}
-                        to="/"
-                        sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            textDecoration: "none",
-                            color: "#401f0a",
-                            flexShrink: 0,
-                        }}
+                    <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        style={{ flexShrink: 0 }}
                     >
                         <Box
-                            component="img"
-                            src="/logo-cookbook.png"
-                            alt="Cookbook logo"
+                            component={Link}
+                            to="/"
                             sx={{
-                                height: { xs: 36, sm: 44, md: 50 },
-                                mr: 1,
-                                borderRadius: "8px",
+                                display: "flex",
+                                alignItems: "center",
+                                textDecoration: "none",
+                                color: "#401f0a",
                             }}
-                        />
-                    </Box>
+                        >
+                            <Box
+                                component="img"
+                                src="/logo-cookbook.png"
+                                alt="Cookbook logo"
+                                sx={{
+                                    height: { xs: 36, sm: 44, md: 50 },
+                                    mr: 1,
+                                    borderRadius: "8px",
+                                }}
+                            />
+                        </Box>
+                    </motion.div>
 
                     {/* Desktop nav buttons */}
                     <Box sx={{ display: { xs: "none", md: "flex" }, gap: 0.5 }}>
-                        <Button color="inherit" component={Link} to="/" sx={{ color: "#401f0a" }}>
-                            Domů
-                        </Button>
+                        {NAV_ITEMS.map(({ label, to }) => (
+                            <Button
+                                key={to}
+                                color="inherit"
+                                component={Link}
+                                to={to}
+                                sx={navLinkSx(to)}
+                            >
+                                {label}
+                            </Button>
+                        ))}
                         <Button
                             color="inherit"
                             onClick={() => setCatsOpen((o) => !o)}
-                            sx={{ color: "#401f0a" }}
+                            sx={navLinkSx("/categories")}
                         >
                             Kategorie
-                        </Button>
-                        <Button
-                            color="inherit"
-                            component={Link}
-                            to="/recepty"
-                            sx={{ color: "#401f0a" }}
-                        >
-                            Všechny recepty
-                        </Button>
-                        <Button
-                            color="inherit"
-                            component={Link}
-                            to="/add"
-                            sx={{ color: "#401f0a" }}
-                        >
-                            Přidat recept
-                        </Button>
-                        <Button
-                            color="inherit"
-                            component={Link}
-                            to="/plan"
-                            sx={{ color: "#401f0a" }}
-                        >
-                            Jídelníček
                         </Button>
                     </Box>
 
@@ -174,13 +211,7 @@ export function Navbar() {
                 onClose={() => setDrawerOpen(false)}
                 sx={{ "& .MuiDrawer-paper": { width: { xs: "85vw", sm: 320 } } }}
             >
-                <Box
-                    sx={{
-                        p: 1.5,
-                        display: "flex",
-                        justifyContent: "flex-end",
-                    }}
-                >
+                <Box sx={{ p: 1.5, display: "flex", justifyContent: "flex-end" }}>
                     <IconButton onClick={() => setDrawerOpen(false)} aria-label="Zavřít menu">
                         <CloseIcon />
                     </IconButton>
@@ -202,10 +233,7 @@ export function Navbar() {
                     </ListItemButton>
 
                     <Collapse in={mobileCatsOpen} unmountOnExit>
-                        <CategoryNavbar
-                            onItemClick={() => setDrawerOpen(false)}
-                            mobile
-                        />
+                        <CategoryNavbar onItemClick={() => setDrawerOpen(false)} mobile />
                     </Collapse>
 
                     <ListItemButton component={Link} to="/recepty">

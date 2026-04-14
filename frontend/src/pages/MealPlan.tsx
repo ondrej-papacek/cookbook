@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { RevealOnScroll } from "../components/UI/RevealOnScroll";
 import {
     Avatar,
     Box,
@@ -295,9 +296,9 @@ export function MealPlan() {
                     gap: 2,
                 }}
             >
-                {weekDays.map((date) => (
+                {weekDays.map((date, i) => (
+                    <RevealOnScroll key={date} delay={i * 0.05}>
                     <Box
-                        key={date}
                         sx={{
                             p: 1.5,
                             border: 1,
@@ -337,6 +338,7 @@ export function MealPlan() {
                             ))}
                         </Stack>
                     </Box>
+                    </RevealOnScroll>
                 ))}
             </Box>
 
