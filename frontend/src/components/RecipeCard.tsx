@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import {
     Card,
     CardMedia,
@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { Link } from "react-router-dom";
 import { Button } from "./UI/Button";
 import { deleteRecipe } from "../api/recipes";
@@ -23,10 +24,11 @@ export type RecipeCardProps = {
     name: string;
     categories: string[];
     image?: string;
+    totalTime?: number;
     onDeleted?: () => void;
 };
 
-export function RecipeCard({ id, name, categories, image, onDeleted }: RecipeCardProps) {
+export function RecipeCard({ id, name, categories, image, totalTime, onDeleted }: RecipeCardProps) {
     const [open, setOpen] = useState(false);
 
     const handleDelete = async () => {
@@ -64,6 +66,20 @@ export function RecipeCard({ id, name, categories, image, onDeleted }: RecipeCar
                         <Typography variant="body2" color="text.secondary" noWrap>
                             {categories.join(", ")}
                         </Typography>
+                        {totalTime != null && totalTime > 0 && (
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 0.5,
+                                    mt: 0.75,
+                                    color: "text.disabled",
+                                }}
+                            >
+                                <AccessTimeIcon sx={{ fontSize: 14 }} />
+                                <Typography variant="caption">{totalTime} min</Typography>
+                            </Box>
+                        )}
                     </CardContent>
                 </Box>
 

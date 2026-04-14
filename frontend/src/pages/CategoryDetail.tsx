@@ -30,6 +30,7 @@ export function CategoryDetail() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [page, setPage] = useState(1);
     const [filterOpen, setFilterOpen] = useState(false);
+    const [timeLimit, setTimeLimit] = useState<number | null>(null);
 
     const [filters, setFilters] = useState<Filters>({
         mealType: [],
@@ -55,16 +56,16 @@ export function CategoryDetail() {
     const filtered = useMemo(() => {
         return inCategory.filter((r) => {
             const cats = r.categories ?? [];
-            return (
-                (filters.mealType.length === 0 ||
-                    cats.some((c) => filters.mealType.includes(c))) &&
-                (filters.diet.length === 0 ||
-                    cats.some((c) => filters.diet.includes(c))) &&
-                (filters.season.length === 0 ||
-                    cats.some((c) => filters.season.includes(c)))
-            );
+            if (filters.mealType.length > 0 && !cats.some((c) => filters.mealType.includes(c))) return false;
+            if (filters.diet.length > 0 && !cats.some((c) => filters.diet.includes(c))) return false;
+            if (filters.season.length > 0 && !cats.some((c) => filters.season.includes(c))) return false;
+            if (timeLimit !== null) {
+                const total = (r.prepTime ?? 0) + (r.cookTime ?? 0);
+                if (total > 0 && total > timeLimit) return false;
+            }
+            return true;
         });
-    }, [inCategory, filters]);
+    }, [inCategory, filters, timeLimit]);
 
     const pageCount = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
     const start = (page - 1) * PER_PAGE;
@@ -141,7 +142,12 @@ export function CategoryDetail() {
                         <CloseIcon />
                     </IconButton>
                 </Box>
-                <RecipeFilter filters={filters} onFilterChange={handleFilterChange} />
+                <RecipeFilter
+                    filters={filters}
+                    onFilterChange={handleFilterChange}
+                    timeLimit={timeLimit}
+                    onTimeLimitChange={setTimeLimit}
+                />
             </Drawer>
 
             <Box
@@ -153,7 +159,12 @@ export function CategoryDetail() {
             >
                 {/* Desktop sidebar filter */}
                 <Box sx={{ display: { xs: "none", md: "block" }, flex: "0 0 260px" }}>
-                    <RecipeFilter filters={filters} onFilterChange={handleFilterChange} />
+                    <RecipeFilter
+                        filters={filters}
+                        onFilterChange={handleFilterChange}
+                        timeLimit={timeLimit}
+                        onTimeLimitChange={setTimeLimit}
+                    />
                 </Box>
 
                 <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -178,6 +189,7 @@ export function CategoryDetail() {
                                     (s) => slugToName.get(s) || s
                                 )}
                                 image={r.image}
+                                totalTime={(r.prepTime ?? 0) + (r.cookTime ?? 0) || undefined}
                             />
                         ))}
                     </Box>

@@ -8,6 +8,7 @@ import { RecipeDetail } from "./pages/RecipeDetail";
 import { CategoryDetail } from "./pages/CategoryDetail";
 import { AllRecipes } from "./pages/AllRecipes";
 import { ShoppingList } from "./pages/ShoppingList";
+import { MealPlan } from "./pages/MealPlan";
 import Login from "./pages/Login";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
@@ -33,6 +34,7 @@ export default function App() {
                     <Route path="add" element={<AddRecipe />} />
                     <Route path="edit/:id" element={<EditRecipe />} />
                     <Route path="nakup" element={<ShoppingList />} />
+                    <Route path="plan" element={<MealPlan />} />
                 </Route>
             </Routes>
         </BrowserRouter>

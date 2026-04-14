@@ -68,6 +68,7 @@ export function Home() {
                             (s) => slugToName.get(s) || s
                         )}
                         image={r.image}
+                        totalTime={(r.prepTime ?? 0) + (r.cookTime ?? 0) || undefined}
                     />
                 ))}
             </Box>

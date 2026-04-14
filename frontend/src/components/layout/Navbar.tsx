@@ -111,6 +111,14 @@ export function Navbar() {
                         >
                             Přidat recept
                         </Button>
+                        <Button
+                            color="inherit"
+                            component={Link}
+                            to="/plan"
+                            sx={{ color: "#401f0a" }}
+                        >
+                            Jídelníček
+                        </Button>
                     </Box>
 
                     {/* Spacer */}
@@ -206,6 +214,10 @@ export function Navbar() {
 
                     <ListItemButton component={Link} to="/add">
                         <ListItemText primary="Přidat recept" />
+                    </ListItemButton>
+
+                    <ListItemButton component={Link} to="/plan">
+                        <ListItemText primary="Jídelníček" />
                     </ListItemButton>
 
                     <ListItemButton component={Link} to="/nakup">

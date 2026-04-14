@@ -9,6 +9,8 @@ class Recipe(BaseModel):
     steps: List[str]
     image: Optional[str] = None
     youtubeUrl: Optional[str] = None
+    prepTime: Optional[int] = None   # minutes
+    cookTime: Optional[int] = None   # minutes
 
 class RecipeWithID(Recipe):
     id: str

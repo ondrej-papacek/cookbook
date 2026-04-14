@@ -8,6 +8,7 @@ import {
     InputLabel,
     Select,
     OutlinedInput,
+    Stack,
 } from "@mui/material";
 import TextareaAutosize from '@mui/material/TextareaAutosize';
 import { Button } from "../components/UI/Button";
@@ -70,6 +71,29 @@ export function EditRecipe() {
                 onChange={(e) => setRecipe({ ...recipe, name: e.target.value })}
                 sx={{ mb: 2 }}
             />
+
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 2 }}>
+                <TextField
+                    fullWidth
+                    type="number"
+                    label="Příprava (min)"
+                    value={recipe.prepTime ?? ""}
+                    onChange={(e) =>
+                        setRecipe({ ...recipe, prepTime: e.target.value === "" ? undefined : Math.max(0, Number(e.target.value)) })
+                    }
+                    slotProps={{ input: { inputProps: { min: 0 } } }}
+                />
+                <TextField
+                    fullWidth
+                    type="number"
+                    label="Vaření (min)"
+                    value={recipe.cookTime ?? ""}
+                    onChange={(e) =>
+                        setRecipe({ ...recipe, cookTime: e.target.value === "" ? undefined : Math.max(0, Number(e.target.value)) })
+                    }
+                    slotProps={{ input: { inputProps: { min: 0 } } }}
+                />
+            </Stack>
 
             <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel id="categories-label">Kategorie</InputLabel>

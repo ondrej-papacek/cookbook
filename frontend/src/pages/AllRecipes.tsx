@@ -36,6 +36,7 @@ export function AllRecipes() {
     const [page, setPage] = useState(1);
     const [randomRecipe, setRandomRecipe] = useState<any | null>(null);
     const [filterOpen, setFilterOpen] = useState(false);
+    const [timeLimit, setTimeLimit] = useState<number | null>(null);
 
     useEffect(() => {
         getCategories().then(setCategories);
@@ -63,8 +64,15 @@ export function AllRecipes() {
             out = out.filter((r) => mustContainAny(filters.season)(r.categories));
         }
 
+        if (timeLimit !== null) {
+            out = out.filter((r) => {
+                const total = (r.prepTime ?? 0) + (r.cookTime ?? 0);
+                return total === 0 || total <= timeLimit;
+            });
+        }
+
         return out;
-    }, [recipes, filters]);
+    }, [recipes, filters, timeLimit]);
 
     const pageCount = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
     const start = (page - 1) * PER_PAGE;
@@ -174,7 +182,12 @@ export function AllRecipes() {
                         <CloseIcon />
                     </IconButton>
                 </Box>
-                <RecipeFilter filters={filters} onFilterChange={handleFilterChange} />
+                <RecipeFilter
+                    filters={filters}
+                    onFilterChange={handleFilterChange}
+                    timeLimit={timeLimit}
+                    onTimeLimitChange={setTimeLimit}
+                />
             </Drawer>
 
             <Box
@@ -186,7 +199,12 @@ export function AllRecipes() {
             >
                 {/* Desktop sidebar filter */}
                 <Box sx={{ display: { xs: "none", md: "block" }, flex: "0 0 260px" }}>
-                    <RecipeFilter filters={filters} onFilterChange={handleFilterChange} />
+                    <RecipeFilter
+                        filters={filters}
+                        onFilterChange={handleFilterChange}
+                        timeLimit={timeLimit}
+                        onTimeLimitChange={setTimeLimit}
+                    />
                 </Box>
 
                 <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -211,6 +229,7 @@ export function AllRecipes() {
                                     (s) => slugToName.get(s) || s
                                 )}
                                 image={r.image}
+                                totalTime={(r.prepTime ?? 0) + (r.cookTime ?? 0) || undefined}
                             />
                         ))}
                     </Box>

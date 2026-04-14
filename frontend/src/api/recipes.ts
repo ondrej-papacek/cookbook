@@ -12,6 +12,8 @@ export type Recipe = {
     tags: string[];
     image?: string;
     youtubeUrl?: string;
+    prepTime?: number;   // minutes
+    cookTime?: number;   // minutes
 };
 
 export async function getRecipes(): Promise<Recipe[]> {
