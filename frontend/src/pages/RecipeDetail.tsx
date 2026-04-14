@@ -9,12 +9,18 @@ import {
     Stack,
     TextField,
     Snackbar,
+    Tooltip,
+    IconButton,
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 import EditIcon from "@mui/icons-material/Edit";
+import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
+import RemoveShoppingCartIcon from "@mui/icons-material/RemoveShoppingCart";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { getCategories, type Category } from "../api/categories";
 import { getRecipe } from "../api/recipes";
 import { Button } from "../components/UI/Button";
+import { useShoppingListContext } from "../context/ShoppingListContext";
 
 export function RecipeDetail() {
     const { id } = useParams();
@@ -33,6 +39,7 @@ export function RecipeDetail() {
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const { addItem, addAll, removeItem, isAdded, items } = useShoppingListContext();
 
     useEffect(() => {
         if (!id) return;
@@ -164,7 +171,13 @@ export function RecipeDetail() {
                         />
                     )}
 
-                    <Box display="flex" justifyContent="space-between" mb={2}>
+                    <Box
+                        display="flex"
+                        flexDirection={{ xs: "column", sm: "row" }}
+                        justifyContent="space-between"
+                        gap={1}
+                        mb={2}
+                    >
                         <Button
                             variant={cooking ? "contained" : "outlined"}
                             color={cooking ? "secondary" : "primary"}
@@ -250,7 +263,12 @@ export function RecipeDetail() {
                         </Box>
                     )}
 
-                    <Typography variant="h3" gutterBottom fontWeight="bold">
+                    <Typography
+                        variant="h3"
+                        gutterBottom
+                        fontWeight="bold"
+                        sx={{ fontSize: { xs: "1.75rem", sm: "2.25rem", md: "3rem" } }}
+                    >
                         {recipe.name}
                     </Typography>
 
@@ -260,27 +278,103 @@ export function RecipeDetail() {
 
                     <Divider sx={{ my: 2 }} />
 
-                    <Typography variant="h5" gutterBottom fontWeight="bold">
-                        Ingredience
-                    </Typography>
+                    <Box
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            flexWrap: "wrap",
+                            gap: 1,
+                            mb: 1,
+                        }}
+                    >
+                        <Typography variant="h5" fontWeight="bold">
+                            Ingredience
+                        </Typography>
+                        <Stack direction="row" gap={1} alignItems="center">
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<ShoppingCartIcon />}
+                                onClick={() =>
+                                    addAll(
+                                        recipe.ingredients ?? [],
+                                        id!,
+                                        recipe.name
+                                    )
+                                }
+                            >
+                                Přidat vše
+                            </Button>
+                            <Button
+                                variant="text"
+                                size="small"
+                                component={Link}
+                                to="/nakup"
+                                sx={{ color: "text.secondary" }}
+                            >
+                                Zobrazit seznam →
+                            </Button>
+                        </Stack>
+                    </Box>
 
                     <Box
                         sx={{
                             display: "grid",
-                            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                            gap: 1,
+                            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "1fr 1fr 1fr" },
+                            gap: 0.5,
                             mb: 3,
                         }}
                     >
-                        {(recipe.ingredients ?? []).map((ing: string, i: number) => (
-                            <Box
-                                key={i}
-                                component="li"
-                                sx={{ listStyleType: "disc", ml: 3, lineHeight: 1.6 }}
-                            >
-                                {ing}
-                            </Box>
-                        ))}
+                        {(recipe.ingredients ?? []).map((ing: string, i: number) => {
+                            const added = isAdded(ing, id!);
+                            const addedItem = items.find(
+                                (it) => it.ingredient === ing && it.recipeId === id
+                            );
+                            return (
+                                <Box
+                                    key={i}
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 0.5,
+                                        lineHeight: 1.6,
+                                    }}
+                                >
+                                    <Tooltip
+                                        title={added ? "Odebrat ze seznamu" : "Přidat do nákupního seznamu"}
+                                        placement="left"
+                                    >
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => {
+                                                if (added && addedItem) {
+                                                    removeItem(addedItem.id);
+                                                } else {
+                                                    addItem(ing, id!, recipe.name);
+                                                }
+                                            }}
+                                            sx={{
+                                                color: added ? "primary.main" : "text.disabled",
+                                                flexShrink: 0,
+                                            }}
+                                        >
+                                            {added ? (
+                                                <RemoveShoppingCartIcon fontSize="small" />
+                                            ) : (
+                                                <AddShoppingCartIcon fontSize="small" />
+                                            )}
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Typography
+                                        component="span"
+                                        sx={{ fontSize: "0.95rem", lineHeight: 1.6 }}
+                                    >
+                                        {ing}
+                                    </Typography>
+                                </Box>
+                            );
+                        })}
                     </Box>
 
                     <Typography variant="h5" gutterBottom fontWeight="bold">

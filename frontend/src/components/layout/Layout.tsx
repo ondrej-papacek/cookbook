@@ -13,7 +13,7 @@ export function Layout() {
             <Divider />
 
             <main style={{ flex: 1 }}>
-                <Container maxWidth="lg" sx={{ pb: 6 }}>
+                <Container maxWidth="lg" sx={{ pb: { xs: 4, md: 6 }, px: { xs: 2, sm: 3 } }}>
                     <Outlet />
                 </Container>
             </main>

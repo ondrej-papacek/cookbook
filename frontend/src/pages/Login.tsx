@@ -22,7 +22,7 @@ export default function Login() {
 
     return (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-            <Box component="form" onSubmit={handleSubmit} sx={{ width: 300 }}>
+            <Box component="form" onSubmit={handleSubmit} sx={{ width: { xs: "90vw", sm: 360 }, maxWidth: 400 }}>
                 <Typography variant="h5" mb={2}>Přihlášení</Typography>
                 <TextField
                     label="Email"

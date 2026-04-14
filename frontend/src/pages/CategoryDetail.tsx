@@ -1,10 +1,20 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Box, Container, Pagination, Typography } from "@mui/material";
+import {
+    Box,
+    Container,
+    Drawer,
+    IconButton,
+    Pagination,
+    Typography,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import TuneIcon from "@mui/icons-material/Tune";
 import { RecipeFilter } from "../components/RecipeFilter";
 import { RecipeCard } from "../components/RecipeCard";
 import { useRecipes } from "../hooks/useRecipes";
 import { getCategories, type Category } from "../api/categories";
+import { Button } from "../components/UI/Button";
 
 const PER_PAGE = 12;
 
@@ -19,6 +29,7 @@ export function CategoryDetail() {
     const { recipes, loading } = useRecipes();
     const [categories, setCategories] = useState<Category[]>([]);
     const [page, setPage] = useState(1);
+    const [filterOpen, setFilterOpen] = useState(false);
 
     const [filters, setFilters] = useState<Filters>({
         mealType: [],
@@ -78,9 +89,60 @@ export function CategoryDetail() {
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
-            <Typography variant="h4" gutterBottom>
-                Recepty v kategorii: {title}
-            </Typography>
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: 1,
+                    mb: 3,
+                }}
+            >
+                <Typography
+                    variant="h4"
+                    sx={{ fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" } }}
+                >
+                    Recepty v kategorii: {title}
+                </Typography>
+
+                {/* Filter button – mobile only */}
+                <Button
+                    variant="outlined"
+                    onClick={() => setFilterOpen(true)}
+                    startIcon={<TuneIcon />}
+                    sx={{ display: { xs: "flex", md: "none" } }}
+                >
+                    Filtrovat
+                </Button>
+            </Box>
+
+            {/* Mobile filter drawer */}
+            <Drawer
+                anchor="left"
+                open={filterOpen}
+                onClose={() => setFilterOpen(false)}
+                sx={{ "& .MuiDrawer-paper": { width: { xs: "85vw", sm: 320 } } }}
+            >
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        p: 1.5,
+                        borderBottom: 1,
+                        borderColor: "divider",
+                    }}
+                >
+                    <Typography variant="h6" sx={{ pl: 1 }}>
+                        Filtrovat recepty
+                    </Typography>
+                    <IconButton onClick={() => setFilterOpen(false)} aria-label="Zavřít filtry">
+                        <CloseIcon />
+                    </IconButton>
+                </Box>
+                <RecipeFilter filters={filters} onFilterChange={handleFilterChange} />
+            </Drawer>
 
             <Box
                 sx={{
@@ -89,12 +151,24 @@ export function CategoryDetail() {
                     gap: 4,
                 }}
             >
-                <Box sx={{ flex: { xs: "1 1 auto", md: "0 0 280px" } }}>
+                {/* Desktop sidebar filter */}
+                <Box sx={{ display: { xs: "none", md: "block" }, flex: "0 0 260px" }}>
                     <RecipeFilter filters={filters} onFilterChange={handleFilterChange} />
                 </Box>
 
-                <Box sx={{ flex: 1 }}>
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: {
+                                xs: "1fr",
+                                sm: "repeat(2, 1fr)",
+                                md: "repeat(2, 1fr)",
+                                lg: "repeat(3, 1fr)",
+                            },
+                            gap: 2,
+                        }}
+                    >
                         {current.map((r) => (
                             <RecipeCard
                                 key={r.id}
@@ -114,6 +188,7 @@ export function CategoryDetail() {
                             count={pageCount}
                             page={page}
                             onChange={(_, p) => setPage(p)}
+                            size="small"
                         />
                     </Box>
                 </Box>

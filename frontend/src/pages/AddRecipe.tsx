@@ -72,7 +72,7 @@ export function AddRecipe() {
     };
 
     return (
-        <Box sx={{ maxWidth: 600, mx: "auto" }}>
+        <Box sx={{ maxWidth: { xs: "100%", sm: 600 }, mx: "auto" }}>
             <Typography variant="h4" gutterBottom>
                 Přidat recept
             </Typography>
@@ -119,6 +119,7 @@ export function AddRecipe() {
                 minRows={3}
                 style={{
                     width: '100%',
+                    boxSizing: 'border-box',
                     fontSize: '1rem',
                     fontFamily: 'inherit',
                     padding: '16.5px 14px',
@@ -138,6 +139,7 @@ export function AddRecipe() {
                 minRows={3}
                 style={{
                     width: '100%',
+                    boxSizing: 'border-box',
                     fontSize: '1rem',
                     fontFamily: 'inherit',
                     padding: '16.5px 14px',

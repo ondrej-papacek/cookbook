@@ -141,7 +141,7 @@ export function RecipeFilter({
     );
 
     return (
-        <Box sx={{ p: 2, width: 250 }}>
+        <Box sx={{ p: 2, width: "100%" }}>
             <Typography variant="h6" gutterBottom>
                 Filtrovat recepty
             </Typography>

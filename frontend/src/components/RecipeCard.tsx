@@ -44,7 +44,7 @@ export function RecipeCard({ id, name, categories, image, onDeleted }: RecipeCar
             <Card
                 sx={{
                     position: "relative",
-                    maxWidth: 300,
+                    width: "100%",
                     "&:hover .actions": { opacity: 1 },
                 }}
             >
@@ -75,7 +75,7 @@ export function RecipeCard({ id, name, categories, image, onDeleted }: RecipeCar
                         right: 8,
                         display: "flex",
                         gap: 1,
-                        opacity: 0,
+                        opacity: { xs: 1, sm: 0 },
                         transition: "opacity 0.3s",
                     }}
                 >

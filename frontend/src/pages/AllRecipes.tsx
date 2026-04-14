@@ -1,5 +1,16 @@
-﻿import { useEffect, useMemo, useState } from "react";
-import { Box, Container, Pagination, Typography, Stack, Divider } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
+import {
+    Box,
+    Container,
+    Pagination,
+    Typography,
+    Stack,
+    Divider,
+    Drawer,
+    IconButton,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import TuneIcon from "@mui/icons-material/Tune";
 import { RecipeFilter } from "../components/RecipeFilter";
 import { RecipeCard } from "../components/RecipeCard";
 import { useRecipes } from "../hooks/useRecipes";
@@ -24,6 +35,7 @@ export function AllRecipes() {
     });
     const [page, setPage] = useState(1);
     const [randomRecipe, setRandomRecipe] = useState<any | null>(null);
+    const [filterOpen, setFilterOpen] = useState(false);
 
     useEffect(() => {
         getCategories().then(setCategories);
@@ -91,15 +103,32 @@ export function AllRecipes() {
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <Stack
-                direction="row"
-                alignItems="center"
+                direction={{ xs: "column", sm: "row" }}
+                alignItems={{ xs: "flex-start", sm: "center" }}
                 justifyContent="space-between"
+                gap={1}
                 sx={{ mb: 3 }}
             >
-                <Typography variant="h4">Všechny recepty</Typography>
-                <Button variant="contained" onClick={handleRandomRecipe}>
-                    Navrhni recept
-                </Button>
+                <Typography
+                    variant="h4"
+                    sx={{ fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" } }}
+                >
+                    Všechny recepty
+                </Typography>
+                <Stack direction="row" gap={1}>
+                    {/* Filter button – mobile only */}
+                    <Button
+                        variant="outlined"
+                        onClick={() => setFilterOpen(true)}
+                        startIcon={<TuneIcon />}
+                        sx={{ display: { xs: "flex", md: "none" } }}
+                    >
+                        Filtrovat
+                    </Button>
+                    <Button variant="contained" onClick={handleRandomRecipe}>
+                        Navrhni recept
+                    </Button>
+                </Stack>
             </Stack>
 
             {randomRecipe && (
@@ -107,7 +136,7 @@ export function AllRecipes() {
                     <Typography variant="h6" gutterBottom>
                         Tip na dnešní vaření:
                     </Typography>
-                    <Box sx={{ display: "flex", justifyContent: "center" }}>
+                    <Box sx={{ maxWidth: 300 }}>
                         <RecipeCard
                             id={randomRecipe.id}
                             name={randomRecipe.name}
@@ -121,6 +150,33 @@ export function AllRecipes() {
                 </Box>
             )}
 
+            {/* Mobile filter drawer */}
+            <Drawer
+                anchor="left"
+                open={filterOpen}
+                onClose={() => setFilterOpen(false)}
+                sx={{ "& .MuiDrawer-paper": { width: { xs: "85vw", sm: 320 } } }}
+            >
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        p: 1.5,
+                        borderBottom: 1,
+                        borderColor: "divider",
+                    }}
+                >
+                    <Typography variant="h6" sx={{ pl: 1 }}>
+                        Filtrovat recepty
+                    </Typography>
+                    <IconButton onClick={() => setFilterOpen(false)} aria-label="Zavřít filtry">
+                        <CloseIcon />
+                    </IconButton>
+                </Box>
+                <RecipeFilter filters={filters} onFilterChange={handleFilterChange} />
+            </Drawer>
+
             <Box
                 sx={{
                     display: "flex",
@@ -128,15 +184,24 @@ export function AllRecipes() {
                     gap: 4,
                 }}
             >
-                <Box sx={{ flex: { xs: "1 1 auto", md: "0 0 280px" } }}>
-                    <RecipeFilter
-                        filters={filters}
-                        onFilterChange={handleFilterChange}
-                    />
+                {/* Desktop sidebar filter */}
+                <Box sx={{ display: { xs: "none", md: "block" }, flex: "0 0 260px" }}>
+                    <RecipeFilter filters={filters} onFilterChange={handleFilterChange} />
                 </Box>
 
-                <Box sx={{ flex: 1 }}>
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: {
+                                xs: "1fr",
+                                sm: "repeat(2, 1fr)",
+                                md: "repeat(2, 1fr)",
+                                lg: "repeat(3, 1fr)",
+                            },
+                            gap: 2,
+                        }}
+                    >
                         {current.map((r) => (
                             <RecipeCard
                                 key={r.id}
@@ -156,6 +221,7 @@ export function AllRecipes() {
                             count={pageCount}
                             page={page}
                             onChange={(_, p) => setPage(p)}
+                            size="small"
                         />
                     </Box>
                 </Box>

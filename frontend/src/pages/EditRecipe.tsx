@@ -58,7 +58,7 @@ export function EditRecipe() {
     if (!recipe) return <p>Načítám...</p>;
 
     return (
-        <Box sx={{ maxWidth: 600, mx: "auto" }}>
+        <Box sx={{ maxWidth: { xs: "100%", sm: 600 }, mx: "auto" }}>
             <Typography variant="h4" gutterBottom>
                 Upravit recept
             </Typography>
@@ -107,6 +107,7 @@ export function EditRecipe() {
                 minRows={3}
                 style={{
                     width: '100%',
+                    boxSizing: 'border-box',
                     fontSize: '1rem',
                     fontFamily: 'inherit',
                     padding: '16.5px 14px',
@@ -125,6 +126,7 @@ export function EditRecipe() {
                 minRows={3}
                 style={{
                     width: '100%',
+                    boxSizing: 'border-box',
                     fontSize: '1rem',
                     fontFamily: 'inherit',
                     padding: '16.5px 14px',
