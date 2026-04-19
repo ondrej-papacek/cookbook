@@ -1,14 +1,19 @@
-import firebase_admin
-from firebase_admin import credentials, firestore
+import logging
 import os
 import json
 
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+logger = logging.getLogger("uvicorn.error")
+
 db = None
+
 
 def init_firebase():
     global db
 
-    print("Initializing Firebase...")
+    logger.info("Initializing Firebase...")
 
     firebase_key = os.getenv("FIREBASE_KEY_JSON")
 
@@ -16,8 +21,8 @@ def init_firebase():
         # Production: key provided as JSON string in env var
         try:
             cred_dict = json.loads(firebase_key)
-        except Exception as e:
-            print("Error parsing FIREBASE_KEY_JSON:", e)
+        except Exception:
+            logger.exception("Failed to parse FIREBASE_KEY_JSON")
             raise
     else:
         # Local dev: load from firebase-key.json file
@@ -26,28 +31,28 @@ def init_firebase():
         if not os.path.exists(key_path):
             raise RuntimeError(
                 "No Firebase credentials found. Set FIREBASE_KEY_JSON env var "
-                "or place firebase-key.json in backend/app/"
+                "or place firebase-key.json in backend/"
             )
-        print(f"Loading Firebase credentials from {key_path}")
+        logger.info("Loading Firebase credentials from local file")
         with open(key_path) as f:
             cred_dict = json.load(f)
 
     try:
         cred = credentials.Certificate(cred_dict)
-        print("Firebase credentials loaded successfully")
-    except Exception as e:
-        print("Error loading Firebase credentials:", e)
+    except Exception:
+        logger.exception("Error loading Firebase credentials")
         raise
 
     try:
         firebase_admin.get_app()
-        print("Firebase app already initialized")
+        logger.info("Firebase app already initialized")
     except ValueError:
         firebase_admin.initialize_app(cred)
-        print("Firebase app initialized")
+        logger.info("Firebase app initialized")
 
     db = firestore.client()
-    print("Firebase client ready")
+    logger.info("Firebase client ready")
+
 
 def get_db():
     """Return initialized Firestore client (lazy-init safe)."""
