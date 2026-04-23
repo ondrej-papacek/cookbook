@@ -66,6 +66,7 @@ export function Navbar() {
     const navLinkSx = (path: string) => ({
         color: "#401f0a",
         position: "relative" as const,
+        whiteSpace: "nowrap" as const,
         "&::after": {
             content: '""',
             position: "absolute",
