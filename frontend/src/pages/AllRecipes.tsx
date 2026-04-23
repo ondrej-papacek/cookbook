@@ -1,0 +1,252 @@
+import { useEffect, useMemo, useState } from "react";
+import {
+    Box,
+    Container,
+    Pagination,
+    Typography,
+    Stack,
+    Divider,
+    Drawer,
+    IconButton,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import TuneIcon from "@mui/icons-material/Tune";
+import { RecipeFilter } from "../components/RecipeFilter";
+import { RecipeCard } from "../components/RecipeCard";
+import { RevealOnScroll } from "../components/UI/RevealOnScroll";
+import { RecipeGridSkeleton } from "../components/UI/RecipeGridSkeleton";
+import { useRecipes } from "../hooks/useRecipes";
+import { getCategories, type Category } from "../api/categories";
+import { Button } from "../components/UI/Button";
+
+type Filters = {
+    mealType: string[];
+    diet: string[];
+    season: string[];
+};
+
+const PER_PAGE = 12;
+
+export function AllRecipes() {
+    const { recipes, loading } = useRecipes();
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [filters, setFilters] = useState<Filters>({
+        mealType: [],
+        diet: [],
+        season: [],
+    });
+    const [page, setPage] = useState(1);
+    const [randomRecipe, setRandomRecipe] = useState<any | null>(null);
+    const [filterOpen, setFilterOpen] = useState(false);
+    const [timeLimit, setTimeLimit] = useState<number | null>(null);
+
+    useEffect(() => {
+        getCategories().then(setCategories);
+    }, []);
+
+    const slugToName = useMemo(() => {
+        const map = new Map<string, string>();
+        categories.forEach((c) => map.set(c.slug, c.name));
+        return map;
+    }, [categories]);
+
+    const filtered = useMemo(() => {
+        let out = recipes;
+
+        const mustContainAny = (candidate: string[]) => (r: string[] = []) =>
+            r.some((s) => candidate.includes(s));
+
+        if (filters.mealType.length > 0) {
+            out = out.filter((r) => mustContainAny(filters.mealType)(r.categories));
+        }
+        if (filters.diet.length > 0) {
+            out = out.filter((r) => mustContainAny(filters.diet)(r.categories));
+        }
+        if (filters.season.length > 0) {
+            out = out.filter((r) => mustContainAny(filters.season)(r.categories));
+        }
+
+        if (timeLimit !== null) {
+            out = out.filter((r) => {
+                const total = (r.prepTime ?? 0) + (r.cookTime ?? 0);
+                return total === 0 || total <= timeLimit;
+            });
+        }
+
+        return out;
+    }, [recipes, filters, timeLimit]);
+
+    const pageCount = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+    const start = (page - 1) * PER_PAGE;
+    const current = filtered.slice(start, start + PER_PAGE);
+
+    const handleFilterChange = (section: keyof Filters, value: string) => {
+        setPage(1);
+        setFilters((prev) => {
+            const exists = prev[section].includes(value);
+            return {
+                ...prev,
+                [section]: exists
+                    ? prev[section].filter((v) => v !== value)
+                    : [...prev[section], value],
+            };
+        });
+    };
+
+    const handleRandomRecipe = () => {
+        if (filtered.length === 0) {
+            setRandomRecipe(null);
+            return;
+        }
+
+        let random;
+        do {
+            random = filtered[Math.floor(Math.random() * filtered.length)];
+        } while (filtered.length > 1 && random.id === randomRecipe?.id);
+
+        setRandomRecipe(random);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    if (loading) return <RecipeGridSkeleton count={12} />;
+
+    return (
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Stack
+                direction={{ xs: "column", sm: "row" }}
+                alignItems={{ xs: "flex-start", sm: "center" }}
+                justifyContent="space-between"
+                gap={1}
+                sx={{ mb: 3 }}
+            >
+                <Typography
+                    variant="h4"
+                    sx={{ fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" } }}
+                >
+                    Všechny recepty
+                </Typography>
+                <Stack direction="row" gap={1}>
+                    <Button
+                        variant="outlined"
+                        onClick={() => setFilterOpen(true)}
+                        startIcon={<TuneIcon />}
+                        sx={{ display: { xs: "flex", md: "none" } }}
+                    >
+                        Filtrovat
+                    </Button>
+                    <Button variant="contained" onClick={handleRandomRecipe}>
+                        Navrhni recept
+                    </Button>
+                </Stack>
+            </Stack>
+
+            {randomRecipe && (
+                <Box sx={{ mb: 4 }}>
+                    <Typography variant="h6" gutterBottom>
+                        Tip na dnešní vaření:
+                    </Typography>
+                    <Box sx={{ maxWidth: 300 }}>
+                        <RecipeCard
+                            id={randomRecipe.id}
+                            name={randomRecipe.name}
+                            categories={(randomRecipe.categories ?? []).map(
+                                (s: string) => slugToName.get(s) || s
+                            )}
+                            image={randomRecipe.image}
+                        />
+                    </Box>
+                    <Divider sx={{ my: 3 }} />
+                </Box>
+            )}
+
+            {/* Mobile filter drawer */}
+            <Drawer
+                anchor="left"
+                open={filterOpen}
+                onClose={() => setFilterOpen(false)}
+                sx={{ "& .MuiDrawer-paper": { width: { xs: "85vw", sm: 320 } } }}
+            >
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        p: 1.5,
+                        borderBottom: 1,
+                        borderColor: "divider",
+                    }}
+                >
+                    <Typography variant="h6" sx={{ pl: 1 }}>
+                        Filtrovat recepty
+                    </Typography>
+                    <IconButton onClick={() => setFilterOpen(false)} aria-label="Zavřít filtry">
+                        <CloseIcon />
+                    </IconButton>
+                </Box>
+                <RecipeFilter
+                    filters={filters}
+                    onFilterChange={handleFilterChange}
+                    timeLimit={timeLimit}
+                    onTimeLimitChange={setTimeLimit}
+                />
+            </Drawer>
+
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: { xs: "column", md: "row" },
+                    gap: 4,
+                }}
+            >
+                {/* Desktop sidebar filter */}
+                <Box sx={{ display: { xs: "none", md: "block" }, flex: "0 0 260px" }}>
+                    <RecipeFilter
+                        filters={filters}
+                        onFilterChange={handleFilterChange}
+                        timeLimit={timeLimit}
+                        onTimeLimitChange={setTimeLimit}
+                    />
+                </Box>
+
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: {
+                                xs: "1fr",
+                                sm: "repeat(2, 1fr)",
+                                md: "repeat(2, 1fr)",
+                                lg: "repeat(3, 1fr)",
+                            },
+                            gap: 2,
+                        }}
+                    >
+                        {current.map((r, i) => (
+                            <RevealOnScroll key={r.id} delay={i * 0.04}>
+                                <RecipeCard
+                                    id={r.id}
+                                    name={r.name}
+                                    categories={(r.categories ?? []).map(
+                                        (s) => slugToName.get(s) || s
+                                    )}
+                                    image={r.image}
+                                    totalTime={(r.prepTime ?? 0) + (r.cookTime ?? 0) || undefined}
+                                />
+                            </RevealOnScroll>
+                        ))}
+                    </Box>
+
+                    <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+                        <Pagination
+                            color="primary"
+                            count={pageCount}
+                            page={page}
+                            onChange={(_, p) => setPage(p)}
+                            size="small"
+                        />
+                    </Box>
+                </Box>
+            </Box>
+        </Container>
+    );
+}

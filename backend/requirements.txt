@@ -3,3 +3,6 @@ uvicorn[standard]
 firebase-admin
 python-dotenv
 pydantic
+httpx
+beautifulsoup4
+slowapi
