@@ -8,6 +8,7 @@ import {
     InputLabel,
     Select,
     OutlinedInput,
+    Stack,
 } from "@mui/material";
 import TextareaAutosize from '@mui/material/TextareaAutosize';
 import { Button } from "../components/UI/Button";
@@ -58,7 +59,7 @@ export function EditRecipe() {
     if (!recipe) return <p>Načítám...</p>;
 
     return (
-        <Box sx={{ maxWidth: 600, mx: "auto" }}>
+        <Box sx={{ maxWidth: { xs: "100%", sm: 600 }, mx: "auto" }}>
             <Typography variant="h4" gutterBottom>
                 Upravit recept
             </Typography>
@@ -70,6 +71,29 @@ export function EditRecipe() {
                 onChange={(e) => setRecipe({ ...recipe, name: e.target.value })}
                 sx={{ mb: 2 }}
             />
+
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 2 }}>
+                <TextField
+                    fullWidth
+                    type="number"
+                    label="Příprava (min)"
+                    value={recipe.prepTime ?? ""}
+                    onChange={(e) =>
+                        setRecipe({ ...recipe, prepTime: e.target.value === "" ? undefined : Math.max(0, Number(e.target.value)) })
+                    }
+                    slotProps={{ input: { inputProps: { min: 0 } } }}
+                />
+                <TextField
+                    fullWidth
+                    type="number"
+                    label="Vaření (min)"
+                    value={recipe.cookTime ?? ""}
+                    onChange={(e) =>
+                        setRecipe({ ...recipe, cookTime: e.target.value === "" ? undefined : Math.max(0, Number(e.target.value)) })
+                    }
+                    slotProps={{ input: { inputProps: { min: 0 } } }}
+                />
+            </Stack>
 
             <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel id="categories-label">Kategorie</InputLabel>
@@ -107,6 +131,7 @@ export function EditRecipe() {
                 minRows={3}
                 style={{
                     width: '100%',
+                    boxSizing: 'border-box',
                     fontSize: '1rem',
                     fontFamily: 'inherit',
                     padding: '16.5px 14px',
@@ -125,6 +150,7 @@ export function EditRecipe() {
                 minRows={3}
                 style={{
                     width: '100%',
+                    boxSizing: 'border-box',
                     fontSize: '1rem',
                     fontFamily: 'inherit',
                     padding: '16.5px 14px',

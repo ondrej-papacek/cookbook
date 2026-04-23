@@ -147,7 +147,7 @@ export function Categories() {
     };
 
     return (
-        <Box sx={{ maxWidth: 700, mx: "auto" }}>
+        <Box sx={{ maxWidth: { xs: "100%", md: 700 }, mx: "auto" }}>
             <Typography variant="h4" gutterBottom>
                 Kategorie receptů
             </Typography>
@@ -158,6 +158,7 @@ export function Categories() {
                     size="small"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
+                    sx={{ flex: 1 }}
                 />
                 <TextField
                     select
@@ -217,7 +218,7 @@ export function Categories() {
                                                 </ListItem>
 
                                                 {kids.length > 0 && (
-                                                    <List sx={{ pl: 6 }}>
+                                                    <List sx={{ pl: { xs: 3, sm: 6 } }}>
                                                         {kids.map((child) => (
                                                             <ListItem
                                                                 key={child.id}

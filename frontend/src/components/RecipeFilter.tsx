@@ -1,4 +1,14 @@
-﻿import { Box, Typography, Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
+import {
+    Box,
+    Typography,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    RadioGroup,
+    FormControlLabel,
+    Radio,
+    Button,
+} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Checkbox } from "./UI/Checkbox";
 import { useEffect, useMemo, useState } from "react";
@@ -6,18 +16,26 @@ import { getCategories, type Category } from "../api/categories";
 
 type Sections = "mealType" | "diet" | "season";
 
+const TIME_OPTIONS = [
+    { label: "Do 15 minut", value: 15 },
+    { label: "Do 30 minut", value: 30 },
+    { label: "Do 1 hodiny", value: 60 },
+];
+
 export type RecipeFilterProps = {
     filters: Record<Sections, string[]>;
     onFilterChange: (section: Sections, value: string) => void;
     hiddenSections?: Sections[];
+    timeLimit?: number | null;
+    onTimeLimitChange?: (limit: number | null) => void;
 };
 
 function ParentGroup({
-                         parent,
-                         children,
-                         selected,
-                         onToggle,
-                     }: {
+    parent,
+    children,
+    selected,
+    onToggle,
+}: {
     parent: Category;
     children: Category[];
     selected: string[];
@@ -36,7 +54,6 @@ function ParentGroup({
                     ml: 0,
                 }}
             />
-
             {children.length > 0 && (
                 <Box sx={{ ml: 3, mt: 0.5 }}>
                     {children.map((c) => (
@@ -60,9 +77,9 @@ function ParentGroup({
 }
 
 function CollapsibleSection({
-                                title,
-                                children,
-                            }: {
+    title,
+    children,
+}: {
     title: string;
     children: React.ReactNode;
 }) {
@@ -77,10 +94,7 @@ function CollapsibleSection({
                 "&:before": { display: "none" },
             }}
         >
-            <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                sx={{ px: 0 }}
-            >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 0 }}>
                 <Checkbox
                     label={title}
                     checked={false}
@@ -114,10 +128,12 @@ function isSeasonCategory(cat: Category) {
 }
 
 export function RecipeFilter({
-                                 filters,
-                                 onFilterChange,
-                                 hiddenSections = [],
-                             }: RecipeFilterProps) {
+    filters,
+    onFilterChange,
+    hiddenSections = [],
+    timeLimit,
+    onTimeLimitChange,
+}: RecipeFilterProps) {
     const [categories, setCategories] = useState<Category[]>([]);
 
     useEffect(() => {
@@ -135,13 +151,12 @@ export function RecipeFilter({
 
     const dietRoot = roots.find(isDietCategory);
     const seasonRoot = roots.find(isSeasonCategory);
-
     const mealRoots = roots.filter(
         (r) => r.id !== dietRoot?.id && r.id !== seasonRoot?.id
     );
 
     return (
-        <Box sx={{ p: 2, width: 250 }}>
+        <Box sx={{ p: 2, width: "100%" }}>
             <Typography variant="h6" gutterBottom>
                 Filtrovat recepty
             </Typography>
@@ -183,6 +198,63 @@ export function RecipeFilter({
                         />
                     ))}
                 </CollapsibleSection>
+            )}
+
+            {/* Time filter */}
+            {onTimeLimitChange && (
+                <Accordion
+                    disableGutters
+                    square
+                    sx={{
+                        boxShadow: "none",
+                        border: "none",
+                        mb: 1,
+                        "&:before": { display: "none" },
+                    }}
+                >
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 0 }}>
+                        <Typography
+                            sx={{
+                                fontWeight: "bold",
+                                fontSize: "1rem",
+                                color: timeLimit ? "primary.main" : "text.primary",
+                            }}
+                        >
+                            Čas přípravy
+                            {timeLimit ? ` (≤ ${timeLimit} min)` : ""}
+                        </Typography>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ pt: 0, pl: 1 }}>
+                        <RadioGroup
+                            value={timeLimit?.toString() ?? ""}
+                            onChange={(e) =>
+                                onTimeLimitChange(e.target.value ? Number(e.target.value) : null)
+                            }
+                        >
+                            {TIME_OPTIONS.map((opt) => (
+                                <FormControlLabel
+                                    key={opt.value}
+                                    value={opt.value.toString()}
+                                    control={<Radio size="small" />}
+                                    label={opt.label}
+                                    sx={{
+                                        "& .MuiTypography-root": { fontSize: "0.92rem" },
+                                    }}
+                                />
+                            ))}
+                        </RadioGroup>
+                        {timeLimit != null && (
+                            <Button
+                                size="small"
+                                variant="text"
+                                onClick={() => onTimeLimitChange(null)}
+                                sx={{ mt: 0.5, p: 0, fontSize: "0.8rem", minWidth: 0 }}
+                            >
+                                Zrušit filtr
+                            </Button>
+                        )}
+                    </AccordionDetails>
+                </Accordion>
             )}
         </Box>
     );
