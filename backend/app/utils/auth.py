@@ -38,7 +38,11 @@ def verify_token(
     if allowed:
         email = (decoded_token.get("email") or "").lower()
         email_verified = bool(decoded_token.get("email_verified"))
-        if not email or email not in allowed or not email_verified:
+        # email_verified check disabled: the shared account uses a fictional
+        # address, so Firebase can't send a verification email. The allowlist
+        # above is the real security gate. Re-enable by adding `or not
+        # email_verified` to the condition below.
+        if not email or email not in allowed:
             logger.warning(
                 "Rejected unauthorized user: email=%s verified=%s",
                 email or "<none>", email_verified,
