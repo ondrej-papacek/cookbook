@@ -41,12 +41,63 @@ export function CookingMode({ recipe, onExit }: Props) {
     const [showCustomTimer, setShowCustomTimer] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const audioCtxRef = useRef<AudioContext | null>(null);
 
     useEffect(() => {
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
+            audioCtxRef.current?.close();
         };
     }, []);
+
+    const playAlarmSound = () => {
+        try {
+            const Ctx =
+                window.AudioContext ||
+                (window as unknown as { webkitAudioContext: typeof AudioContext })
+                    .webkitAudioContext;
+            if (!Ctx) return;
+            if (!audioCtxRef.current) audioCtxRef.current = new Ctx();
+            const ctx = audioCtxRef.current;
+            if (ctx.state === "suspended") ctx.resume();
+
+            // Cooking melody: ascending arpeggio C5–E5–G5, ending on a longer C6 chime.
+            const notes: { freq: number; duration: number }[] = [
+                { freq: 523.25, duration: 0.18 }, // C5
+                { freq: 659.25, duration: 0.18 }, // E5
+                { freq: 783.99, duration: 0.18 }, // G5
+                { freq: 1046.5, duration: 0.7 },  // C6 (final chime, longer decay)
+            ];
+            const gap = 0.05;
+            const repeatGap = 0.25;
+            const repeats = 4;
+            const peakGain = 0.32;
+
+            let cursor = ctx.currentTime + 0.02;
+            for (let r = 0; r < repeats; r++) {
+                for (const { freq, duration } of notes) {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = "sine";
+                    osc.frequency.value = freq;
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    gain.gain.setValueAtTime(0, cursor);
+                    gain.gain.linearRampToValueAtTime(peakGain, cursor + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(
+                        0.0001,
+                        cursor + duration
+                    );
+                    osc.start(cursor);
+                    osc.stop(cursor + duration + 0.02);
+                    cursor += duration + gap;
+                }
+                cursor += repeatGap;
+            }
+        } catch {
+            // Silent fallback — user still gets vibration + snackbar
+        }
+    };
 
     const runTimer = (totalSeconds: number) => {
         if (totalSeconds <= 0) return;
@@ -60,6 +111,7 @@ export function CookingMode({ recipe, onExit }: Props) {
                 if (timerRef.current) clearInterval(timerRef.current);
                 setRunning(false);
                 setSnackbarOpen(true);
+                playAlarmSound();
                 if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
                 return 0;
             });

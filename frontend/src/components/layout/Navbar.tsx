@@ -126,7 +126,7 @@ export function Navbar() {
                         >
                             <Box
                                 component="img"
-                                src="/logo-cookbook.png"
+                                src="/new-logo.jpeg"
                                 alt="Cookbook logo"
                                 sx={{
                                     height: { xs: 36, sm: 44, md: 50 },
