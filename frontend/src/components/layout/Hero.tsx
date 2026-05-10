@@ -56,7 +56,7 @@ export function Hero() {
                 >
                     <Box
                         component="img"
-                        src="/cookbook-1440.png"
+                        src="/hero-cookbook-1.jpg"
                         alt="Cookbook"
                         sx={{
                             width: "100%",

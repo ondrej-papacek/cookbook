@@ -25,25 +25,51 @@ export function CursorGlow() {
 
     if (!isPointerFine) return null;
 
+    const HALO_SIZE = 380;
+    const CORE_SIZE = 130;
+
     return (
-        <motion.div
-            style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                width: 340,
-                height: 340,
-                borderRadius: "50%",
-                background:
-                    "radial-gradient(circle, rgba(141,110,99,0.14) 0%, transparent 70%)",
-                pointerEvents: "none",
-                zIndex: 9998,
-                marginLeft: -170,
-                marginTop: -170,
-                x: springX,
-                y: springY,
-                mixBlendMode: "multiply",
-            }}
-        />
+        <>
+            {/* Outer halo — soft espresso (primary), wide and faint */}
+            <motion.div
+                style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: HALO_SIZE,
+                    height: HALO_SIZE,
+                    borderRadius: "50%",
+                    background:
+                        "radial-gradient(circle, rgba(64,31,10,0.12) 0%, rgba(64,31,10,0.05) 40%, transparent 70%)",
+                    pointerEvents: "none",
+                    zIndex: 9998,
+                    marginLeft: -HALO_SIZE / 2,
+                    marginTop: -HALO_SIZE / 2,
+                    x: springX,
+                    y: springY,
+                    mixBlendMode: "multiply",
+                }}
+            />
+            {/* Inner accent — secondary warm taupe, small focal warmth */}
+            <motion.div
+                style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: CORE_SIZE,
+                    height: CORE_SIZE,
+                    borderRadius: "50%",
+                    background:
+                        "radial-gradient(circle, rgba(141,110,99,0.18) 0%, rgba(141,110,99,0.08) 50%, transparent 75%)",
+                    pointerEvents: "none",
+                    zIndex: 9999,
+                    marginLeft: -CORE_SIZE / 2,
+                    marginTop: -CORE_SIZE / 2,
+                    x: springX,
+                    y: springY,
+                    mixBlendMode: "multiply",
+                }}
+            />
+        </>
     );
 }
