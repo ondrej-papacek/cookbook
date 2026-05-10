@@ -29,7 +29,7 @@ export default function Login() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundImage: "url('/cookbook-1440.png')",
+                backgroundImage: "url('/hero-cookbook-1.jpg')",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 position: "relative",
@@ -67,7 +67,7 @@ export default function Login() {
                     {/* Logo */}
                     <Box
                         component="img"
-                        src="/logo-cookbook.png"
+                        src="/new-logo.jpeg"
                         alt="Logo"
                         sx={{
                             height: 52,

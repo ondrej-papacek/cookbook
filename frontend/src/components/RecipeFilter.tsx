@@ -76,6 +76,20 @@ function ParentGroup({
     );
 }
 
+const accordionSx = {
+    boxShadow: "none",
+    border: "none",
+    mb: 1,
+    backgroundColor: "transparent",
+    backgroundImage: "none",
+    "&:before": { display: "none" },
+} as const;
+
+const accordionTitleSx = {
+    fontWeight: "bold",
+    fontSize: "1rem",
+} as const;
+
 function CollapsibleSection({
     title,
     children,
@@ -84,27 +98,9 @@ function CollapsibleSection({
     children: React.ReactNode;
 }) {
     return (
-        <Accordion
-            disableGutters
-            square
-            sx={{
-                boxShadow: "none",
-                border: "none",
-                mb: 1,
-                "&:before": { display: "none" },
-            }}
-        >
+        <Accordion disableGutters square sx={accordionSx}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 0 }}>
-                <Checkbox
-                    label={title}
-                    checked={false}
-                    onChange={() => {}}
-                    sx={{
-                        ml: 0,
-                        fontWeight: "bold",
-                        "& .MuiTypography-root": { fontSize: "1rem" },
-                    }}
-                />
+                <Typography sx={accordionTitleSx}>{title}</Typography>
             </AccordionSummary>
             <AccordionDetails sx={{ pt: 0, pl: 3 }}>
                 {children}
@@ -202,21 +198,11 @@ export function RecipeFilter({
 
             {/* Time filter */}
             {onTimeLimitChange && (
-                <Accordion
-                    disableGutters
-                    square
-                    sx={{
-                        boxShadow: "none",
-                        border: "none",
-                        mb: 1,
-                        "&:before": { display: "none" },
-                    }}
-                >
+                <Accordion disableGutters square sx={accordionSx}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 0 }}>
                         <Typography
                             sx={{
-                                fontWeight: "bold",
-                                fontSize: "1rem",
+                                ...accordionTitleSx,
                                 color: timeLimit ? "primary.main" : "text.primary",
                             }}
                         >
@@ -224,7 +210,7 @@ export function RecipeFilter({
                             {timeLimit ? ` (≤ ${timeLimit} min)` : ""}
                         </Typography>
                     </AccordionSummary>
-                    <AccordionDetails sx={{ pt: 0, pl: 1 }}>
+                    <AccordionDetails sx={{ pt: 0, pl: 3 }}>
                         <RadioGroup
                             value={timeLimit?.toString() ?? ""}
                             onChange={(e) =>
