@@ -1,22 +1,52 @@
+import { useState } from "react";
 import {
+    Alert,
     Box,
     Checkbox,
     Container,
     Divider,
     IconButton,
+    Snackbar,
     Typography,
     Stack,
 } from "@mui/material";
 import { RevealOnScroll } from "../components/UI/RevealOnScroll";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import IosShareIcon from "@mui/icons-material/IosShare";
 import { Link } from "react-router-dom";
 import { useShoppingListContext } from "../context/ShoppingListContext";
 import { Button } from "../components/UI/Button";
 
+type Toast = { open: boolean; severity: "success" | "error" | "info"; message: string };
+
+function buildShareText(
+    groups: Record<string, { ingredient: string; checked: boolean; recipeName: string }[]>
+): string {
+    const lines: string[] = ["Nákupní seznam", ""];
+    for (const [, groupItems] of Object.entries(groups)) {
+        const remaining = groupItems.filter((i) => !i.checked);
+        if (remaining.length === 0) continue;
+        lines.push(groupItems[0].recipeName);
+        for (const item of remaining) {
+            lines.push(`- ${item.ingredient}`);
+        }
+        lines.push("");
+    }
+    return lines.join("\n").trimEnd();
+}
+
 export function ShoppingList() {
     const { items, removeItem, toggleChecked, clearChecked, clearAll } =
         useShoppingListContext();
+    const [toast, setToast] = useState<Toast>({
+        open: false,
+        severity: "success",
+        message: "",
+    });
+
+    const showToast = (severity: Toast["severity"], message: string) =>
+        setToast({ open: true, severity, message });
 
     // Group items by recipe
     const groups = items.reduce<Record<string, typeof items>>((acc, item) => {
@@ -26,6 +56,33 @@ export function ShoppingList() {
     }, {});
 
     const checkedCount = items.filter((i) => i.checked).length;
+    const uncheckedCount = items.length - checkedCount;
+
+    const handleShare = async () => {
+        const text = buildShareText(groups);
+        if (!text) {
+            showToast("info", "Nic k odeslání – seznam je hotový.");
+            return;
+        }
+        const canShare =
+            typeof navigator !== "undefined" &&
+            typeof navigator.share === "function";
+        if (canShare) {
+            try {
+                await navigator.share({ title: "Nákupní seznam", text });
+                return;
+            } catch (err) {
+                if ((err as DOMException)?.name === "AbortError") return;
+                // fall through to clipboard fallback
+            }
+        }
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast("success", "Seznam zkopírován do schránky.");
+        } catch {
+            showToast("error", "Sdílení se nezdařilo.");
+        }
+    };
 
     if (items.length === 0) {
         return (
@@ -60,7 +117,17 @@ export function ShoppingList() {
                     Nákupní seznam
                 </Typography>
 
-                <Stack direction="row" gap={1}>
+                <Stack direction="row" gap={1} flexWrap="wrap">
+                    {uncheckedCount > 0 && (
+                        <Button
+                            variant="outlined"
+                            size="small"
+                            startIcon={<IosShareIcon />}
+                            onClick={handleShare}
+                        >
+                            Sdílet seznam
+                        </Button>
+                    )}
                     {checkedCount > 0 && (
                         <Button variant="outlined" size="small" onClick={clearChecked}>
                             Vymazat nakoupené ({checkedCount})
@@ -145,6 +212,21 @@ export function ShoppingList() {
                     </RevealOnScroll>
                 );
             })}
+
+            <Snackbar
+                open={toast.open}
+                autoHideDuration={3000}
+                onClose={() => setToast((t) => ({ ...t, open: false }))}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+                <Alert
+                    severity={toast.severity}
+                    variant="filled"
+                    onClose={() => setToast((t) => ({ ...t, open: false }))}
+                >
+                    {toast.message}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 }
