@@ -7,6 +7,7 @@ import {
     Dialog,
     DialogContent,
     DialogTitle,
+    GlobalStyles,
     IconButton,
     List,
     ListItemAvatar,
@@ -20,6 +21,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import PrintIcon from "@mui/icons-material/Print";
+import DescriptionIcon from "@mui/icons-material/Description";
 import { Link } from "react-router-dom";
 import { useMealPlan, type MealSlot } from "../hooks/useMealPlan";
 import { useRecipes } from "../hooks/useRecipes";
@@ -82,6 +85,7 @@ function SlotCell({
 
             {meal ? (
                 <Box
+                    className="meal-plan-slot"
                     sx={{
                         display: "flex",
                         alignItems: "center",
@@ -98,6 +102,7 @@ function SlotCell({
                         <Avatar
                             src={meal.recipeImage}
                             variant="rounded"
+                            className="meal-plan-slot-avatar"
                             sx={{ width: 36, height: 36, flexShrink: 0 }}
                         />
                     )}
@@ -121,6 +126,7 @@ function SlotCell({
                     <IconButton
                         size="small"
                         onClick={() => onRemove(meal.id)}
+                        className="meal-plan-slot-remove"
                         sx={{ flexShrink: 0, color: "text.disabled", "&:hover": { color: "error.main" } }}
                     >
                         <CloseIcon fontSize="small" />
@@ -129,6 +135,7 @@ function SlotCell({
             ) : (
                 <Box
                     onClick={onAdd}
+                    className="meal-plan-slot-empty"
                     sx={{
                         display: "flex",
                         alignItems: "center",
@@ -250,10 +257,80 @@ export function MealPlan() {
         });
     };
 
+    const handleExportDocx = async () => {
+        const { exportMealPlanToDocx } = await import("../utils/mealPlanExport");
+        await exportMealPlanToDocx(weekDays, getMeal);
+    };
+
+    const printRangeLabel = useMemo(() => {
+        if (weekDays.length === 0) return "";
+        const first = weekDays[0];
+        const last = weekDays[weekDays.length - 1];
+        const [, fm, fd] = first.split("-").map(Number);
+        const [ly, lm, ld] = last.split("-").map(Number);
+        return `${fd}. ${fm}. – ${ld}. ${lm}. ${ly}`;
+    }, [weekDays]);
+
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Container maxWidth="lg" sx={{ py: 4 }} className="meal-plan-page">
+            <GlobalStyles
+                styles={{
+                    "@media print": {
+                        "@page": { size: "A4", margin: "12mm" },
+                        "body *": { visibility: "hidden !important" },
+                        ".meal-plan-page, .meal-plan-page *": {
+                            visibility: "visible !important",
+                        },
+                        ".meal-plan-page": {
+                            position: "absolute",
+                            left: 0,
+                            top: 0,
+                            width: "100%",
+                            padding: "0 !important",
+                            margin: 0,
+                            color: "#000",
+                            background: "#fff",
+                        },
+                        ".no-print": { display: "none !important" },
+                        ".print-only": { display: "block !important" },
+                        ".meal-plan-grid": {
+                            display: "grid !important",
+                            gridTemplateColumns: "repeat(2, 1fr) !important",
+                            gap: "6mm !important",
+                        },
+                        ".meal-plan-day": {
+                            breakInside: "avoid",
+                            border: "1px solid #c7b79c !important",
+                            borderRadius: "4px",
+                            padding: "4mm !important",
+                            background: "#fff !important",
+                        },
+                        ".meal-plan-slot": {
+                            border: "1px solid #e5dccb !important",
+                            background: "#fff !important",
+                        },
+                        ".meal-plan-slot-avatar": { display: "none !important" },
+                        ".meal-plan-slot-remove": { display: "none !important" },
+                        ".meal-plan-slot-empty": { display: "none !important" },
+                        a: { color: "#000 !important", textDecoration: "none !important" },
+                    },
+                    ".print-only": { display: "none" },
+                }}
+            />
+
+            {/* Print-only title */}
+            <Box className="print-only" sx={{ mb: 2 }}>
+                <Typography variant="h4" sx={{ color: "#000", fontWeight: 700 }}>
+                    Jídelníček
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#555" }}>
+                    {printRangeLabel}
+                </Typography>
+            </Box>
+
             {/* Header */}
             <Box
+                className="no-print"
                 sx={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -270,21 +347,40 @@ export function MealPlan() {
                     </Typography>
                 </Box>
 
-                {plannedCount > 0 && (
-                    <Button
-                        variant="outlined"
-                        startIcon={<ShoppingCartIcon />}
-                        component={Link}
-                        to="/nakup"
-                        onClick={handleAddAllToShopping}
-                    >
-                        Přidat vše do nákupu
-                    </Button>
-                )}
+                <Stack direction="row" gap={1} flexWrap="wrap">
+                    {plannedCount > 0 && (
+                        <>
+                            <Button
+                                variant="outlined"
+                                startIcon={<PrintIcon />}
+                                onClick={() => window.print()}
+                            >
+                                Tisk / PDF
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                startIcon={<DescriptionIcon />}
+                                onClick={handleExportDocx}
+                            >
+                                Stáhnout DOCX
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                startIcon={<ShoppingCartIcon />}
+                                component={Link}
+                                to="/nakup"
+                                onClick={handleAddAllToShopping}
+                            >
+                                Přidat vše do nákupu
+                            </Button>
+                        </>
+                    )}
+                </Stack>
             </Box>
 
             {/* Desktop: 7-column grid / Mobile: vertical list */}
             <Box
+                className="meal-plan-grid"
                 sx={{
                     display: "grid",
                     gridTemplateColumns: {
@@ -299,6 +395,7 @@ export function MealPlan() {
                 {weekDays.map((date, i) => (
                     <RevealOnScroll key={date} delay={i * 0.05}>
                     <Box
+                        className="meal-plan-day"
                         sx={{
                             p: 1.5,
                             border: 1,

@@ -17,6 +17,7 @@
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
     "axios": "^1.11.0",
+    "docx": "^9.6.1",
     "firebase": "^12.3.0",
     "framer-motion": "^12.38.0",
     "react": "^19.1.1",
