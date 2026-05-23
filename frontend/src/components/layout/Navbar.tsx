@@ -31,7 +31,7 @@ const NAV_ITEMS = [
     { label: "Domů", to: "/" },
     { label: "Všechny recepty", to: "/recepty" },
     { label: "Přidat recept", to: "/add" },
-    { label: "Jídelníček", to: "/plan" },
+    { label: "Jídelníčky", to: "/plan" },
 ];
 
 export function Navbar() {
@@ -246,7 +246,7 @@ export function Navbar() {
                     </ListItemButton>
 
                     <ListItemButton component={Link} to="/plan">
-                        <ListItemText primary="Jídelníček" />
+                        <ListItemText primary="Jídelníčky" />
                     </ListItemButton>
 
                     <ListItemButton component={Link} to="/nakup">

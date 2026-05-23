@@ -13,7 +13,7 @@ load_dotenv()
 
 from app.utils.firebase import init_firebase
 from app.utils.rate_limit import limiter
-from app.routes import recipe_handler, category_handler
+from app.routes import recipe_handler, category_handler, meal_plan_handler
 
 
 @asynccontextmanager
@@ -85,3 +85,4 @@ def healthz():
 
 app.include_router(recipe_handler.router, prefix="/api")
 app.include_router(category_handler.router, prefix="/api")
+app.include_router(meal_plan_handler.router, prefix="/api")
