@@ -47,7 +47,7 @@ def create_category(request: Request, cat: Category):
     )
     next_order = (last[0].to_dict().get("order", 0) if last else 0) + 1
 
-    data = cat.dict()
+    data = cat.model_dump()
     if data.get("order") is None:
         data["order"] = next_order
 
@@ -74,7 +74,7 @@ def update_category(request: Request, id: str, payload: CategoryUpdate):
     if not doc_ref.get().exists:
         raise HTTPException(status_code=404, detail="Category not found")
 
-    update_data = payload.dict(exclude_unset=True, exclude_none=True)
+    update_data = payload.model_dump(exclude_unset=True, exclude_none=True)
     doc_ref.update(update_data)
     new_doc = doc_ref.get()
     return {**new_doc.to_dict(), "id": new_doc.id}
