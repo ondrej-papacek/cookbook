@@ -18,7 +18,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
     {
         heading: "Plánování",
         links: [
-            { to: "/plan", label: "Jídelníček" },
+            { to: "/plan", label: "Jídelníčky" },
             { to: "/nakup", label: "Nákupní seznam" },
         ],
     },
