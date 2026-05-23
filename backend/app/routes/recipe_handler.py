@@ -72,8 +72,8 @@ def get_recipe(request: Request, recipe_id: str):
 def create_recipe(request: Request, recipe: Recipe):
     db = get_db()
     doc_ref = db.collection("recipes").document()
-    doc_ref.set(recipe.dict())
-    return {"id": doc_ref.id, **recipe.dict()}
+    doc_ref.set(recipe.model_dump())
+    return {"id": doc_ref.id, **recipe.model_dump()}
 
 
 @router.patch("/recipes/{recipe_id}", response_model=RecipeWithID)
@@ -85,7 +85,7 @@ def update_recipe(request: Request, recipe_id: str, updated_data: RecipeUpdate):
     if not doc.exists:
         raise HTTPException(status_code=404, detail="Recipe not found")
     # exclude_unset so PATCH only touches fields the client explicitly sent.
-    payload = updated_data.dict(exclude_unset=True)
+    payload = updated_data.model_dump(exclude_unset=True)
     if payload:
         doc_ref.update(payload)
     new_doc = doc_ref.get()

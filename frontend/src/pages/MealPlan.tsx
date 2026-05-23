@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RevealOnScroll } from "../components/UI/RevealOnScroll";
 import {
     Avatar,
@@ -20,16 +20,25 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PrintIcon from "@mui/icons-material/Print";
 import DescriptionIcon from "@mui/icons-material/Description";
-import { Link } from "react-router-dom";
-import { useMealPlan, type MealSlot, type PlannedMeal } from "../hooks/useMealPlan";
+import { Link, useParams } from "react-router-dom";
+import {
+    useMealPlanEditor,
+    thisWeekRange,
+    nextWeekRange,
+    formatRangeLabel,
+    SLOTS,
+    SLOT_LABELS,
+    type MealSlot,
+    type PlannedMeal,
+    type SaveStatus,
+} from "../hooks/useMealPlan";
 import { useRecipes } from "../hooks/useRecipes";
 import { useShoppingListContext } from "../context/ShoppingListContext";
 import { Button } from "../components/UI/Button";
 
-// ── Date helpers ──────────────────────────────────────────────
 const DAYS_CS = ["Ne", "Po", "Út", "St", "Čt", "Pá", "So"];
 
 function localDateStr(d: Date): string {
@@ -37,14 +46,6 @@ function localDateStr(d: Date): string {
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     return `${y}-${m}-${day}`;
-}
-
-function getWeekDays(): string[] {
-    return Array.from({ length: 7 }, (_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() + i);
-        return localDateStr(d);
-    });
 }
 
 function formatDayHeader(dateStr: string) {
@@ -57,163 +58,75 @@ function isToday(dateStr: string) {
     return dateStr === localDateStr(new Date());
 }
 
-// ── Slot label ────────────────────────────────────────────────
-const SLOT_LABELS: Record<MealSlot, string> = { obed: "Oběd", vecere: "Večeře" };
-const SLOTS: MealSlot[] = ["obed", "vecere"];
+const STATUS_TEXT: Record<SaveStatus, string> = {
+    idle: "",
+    saving: "Ukládám…",
+    saved: "Uloženo",
+    error: "Chyba ukládání",
+};
 
-// ── DOCX export (lazy-loads `docx` only on click) ─────────────
-const DAYS_CS_FULL = [
-    "Neděle",
-    "Pondělí",
-    "Úterý",
-    "Středa",
-    "Čtvrtek",
-    "Pátek",
-    "Sobota",
-];
-
-function formatDayLong(dateStr: string) {
-    const [y, m, day] = dateStr.split("-").map(Number);
-    const d = new Date(y, m - 1, day);
-    return `${DAYS_CS_FULL[d.getDay()]} ${d.getDate()}. ${d.getMonth() + 1}.`;
+function SaveStatusChip({ status }: { status: SaveStatus }) {
+    const text = STATUS_TEXT[status];
+    if (!text) return null;
+    return (
+        <Typography
+            variant="caption"
+            sx={{
+                color: status === "error" ? "error.main" : "text.secondary",
+                fontStyle: "italic",
+                whiteSpace: "nowrap",
+            }}
+        >
+            {text}
+        </Typography>
+    );
 }
 
-function formatRange(weekDays: string[]) {
-    if (weekDays.length === 0) return "";
-    const first = weekDays[0];
-    const last = weekDays[weekDays.length - 1];
-    const [, fm, fd] = first.split("-").map(Number);
-    const [ly, lm, ld] = last.split("-").map(Number);
-    return `${fd}. ${fm}. – ${ld}. ${lm}. ${ly}`;
-}
+function EditableName({
+    value,
+    onCommit,
+}: {
+    value: string;
+    onCommit: (name: string) => void;
+}) {
+    const [draft, setDraft] = useState(value);
+    useEffect(() => setDraft(value), [value]);
 
-async function exportMealPlanToDocx(
-    weekDays: string[],
-    getMeal: (date: string, slot: MealSlot) => PlannedMeal | null
-) {
-    const {
-        Document,
-        Packer,
-        Paragraph,
-        Table,
-        TableRow,
-        TableCell,
-        TextRun,
-        HeadingLevel,
-        WidthType,
-        AlignmentType,
-        BorderStyle,
-    } = await import("docx");
-
-    const border = {
-        top: { style: BorderStyle.SINGLE, size: 4, color: "C7B79C" },
-        bottom: { style: BorderStyle.SINGLE, size: 4, color: "C7B79C" },
-        left: { style: BorderStyle.SINGLE, size: 4, color: "C7B79C" },
-        right: { style: BorderStyle.SINGLE, size: 4, color: "C7B79C" },
+    const commit = () => {
+        const trimmed = draft.trim();
+        if (trimmed && trimmed !== value) onCommit(trimmed);
+        else setDraft(value);
     };
 
-    const headerCell = (text: string) =>
-        new TableCell({
-            borders: border,
-            shading: { fill: "F5EDDF" },
-            children: [
-                new Paragraph({
-                    alignment: AlignmentType.CENTER,
-                    children: [new TextRun({ text, bold: true, color: "401F0A" })],
-                }),
-            ],
-        });
-
-    const bodyCell = (
-        text: string,
-        opts: { bold?: boolean; muted?: boolean } = {}
-    ) =>
-        new TableCell({
-            borders: border,
-            children: [
-                new Paragraph({
-                    children: [
-                        new TextRun({
-                            text,
-                            bold: opts.bold,
-                            color: opts.muted ? "9A8B7A" : "2A1A0A",
-                            italics: opts.muted,
-                        }),
-                    ],
-                }),
-            ],
-        });
-
-    const headerRow = new TableRow({
-        tableHeader: true,
-        children: [
-            headerCell("Den"),
-            headerCell(SLOT_LABELS.obed),
-            headerCell(SLOT_LABELS.vecere),
-        ],
-    });
-
-    const rows = weekDays.map((date) => {
-        const cells = [bodyCell(formatDayLong(date), { bold: true })];
-        for (const slot of SLOTS) {
-            const meal = getMeal(date, slot);
-            cells.push(meal ? bodyCell(meal.recipeName) : bodyCell("—", { muted: true }));
-        }
-        return new TableRow({ children: cells });
-    });
-
-    const doc = new Document({
-        creator: "Cookbook",
-        title: "Jídelníček",
-        sections: [
-            {
-                properties: {},
-                children: [
-                    new Paragraph({
-                        heading: HeadingLevel.HEADING_1,
-                        children: [new TextRun({ text: "Jídelníček", color: "401F0A" })],
-                    }),
-                    new Paragraph({
-                        spacing: { after: 240 },
-                        children: [
-                            new TextRun({
-                                text: formatRange(weekDays),
-                                color: "8D6E63",
-                                italics: true,
-                            }),
-                        ],
-                    }),
-                    new Table({
-                        width: { size: 100, type: WidthType.PERCENTAGE },
-                        rows: [headerRow, ...rows],
-                    }),
-                ],
-            },
-        ],
-    });
-
-    const blob = await Packer.toBlob(doc);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "jidelnicek.docx";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    return (
+        <TextField
+            variant="standard"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+                if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+            }}
+            slotProps={{
+                input: {
+                    sx: { fontSize: { xs: "1.5rem", md: "2.125rem" }, fontWeight: 500 },
+                },
+            }}
+            sx={{ minWidth: 200 }}
+        />
+    );
 }
 
-// ── Meal slot card ────────────────────────────────────────────
 function SlotCell({
     slot,
-    onAdd,
     meal,
+    onAdd,
     onRemove,
 }: {
     slot: MealSlot;
+    meal: PlannedMeal | null;
     onAdd: () => void;
-    meal: ReturnType<ReturnType<typeof useMealPlan>["getMeal"]>;
-    onRemove: (id: string) => void;
+    onRemove: () => void;
 }) {
     return (
         <Box>
@@ -267,7 +180,7 @@ function SlotCell({
                     </Typography>
                     <IconButton
                         size="small"
-                        onClick={() => onRemove(meal.id)}
+                        onClick={onRemove}
                         className="meal-plan-slot-remove"
                         sx={{ flexShrink: 0, color: "text.disabled", "&:hover": { color: "error.main" } }}
                     >
@@ -300,7 +213,6 @@ function SlotCell({
     );
 }
 
-// ── Recipe picker dialog ──────────────────────────────────────
 function RecipePicker({
     open,
     onClose,
@@ -315,9 +227,7 @@ function RecipePicker({
 
     const filtered = useMemo(() => {
         const q = search.toLowerCase();
-        return q
-            ? recipes.filter((r) => r.name.toLowerCase().includes(q))
-            : recipes;
+        return q ? recipes.filter((r) => r.name.toLowerCase().includes(q)) : recipes;
     }, [recipes, search]);
 
     return (
@@ -364,10 +274,20 @@ function RecipePicker({
     );
 }
 
-// ── Main page ─────────────────────────────────────────────────
 export function MealPlan() {
-    const weekDays = useMemo(() => getWeekDays(), []);
-    const { getMeal, addMeal, removeMeal } = useMealPlan();
+    const { id } = useParams();
+    const {
+        plan,
+        loading,
+        notFound,
+        status,
+        days,
+        setName,
+        setRange,
+        addMeal,
+        removeMeal,
+        getMeal,
+    } = useMealPlanEditor(id);
     const { recipes } = useRecipes();
     const { addAll } = useShoppingListContext();
 
@@ -381,13 +301,17 @@ export function MealPlan() {
         setPickerSlot(null);
     };
 
-    const plannedCount = weekDays.reduce(
+    const plannedCount = days.reduce(
         (acc, date) => acc + SLOTS.filter((s) => getMeal(date, s) !== null).length,
         0
     );
 
+    const applyRange = (start: string, end: string) => {
+        if (start && end && end >= start) setRange(start, end);
+    };
+
     const handleAddAllToShopping = () => {
-        weekDays.forEach((date) => {
+        days.forEach((date) => {
             SLOTS.forEach((slot) => {
                 const meal = getMeal(date, slot);
                 if (!meal) return;
@@ -400,17 +324,30 @@ export function MealPlan() {
     };
 
     const handleExportDocx = async () => {
-        await exportMealPlanToDocx(weekDays, getMeal);
+        const { exportMealPlanToDocx } = await import("../utils/mealPlanExport");
+        await exportMealPlanToDocx(days, getMeal);
     };
 
-    const printRangeLabel = useMemo(() => {
-        if (weekDays.length === 0) return "";
-        const first = weekDays[0];
-        const last = weekDays[weekDays.length - 1];
-        const [, fm, fd] = first.split("-").map(Number);
-        const [ly, lm, ld] = last.split("-").map(Number);
-        return `${fd}. ${fm}. – ${ld}. ${lm}. ${ly}`;
-    }, [weekDays]);
+    if (loading) {
+        return (
+            <Container maxWidth="lg" sx={{ py: 4 }}>
+                <Typography color="text.secondary">Načítám…</Typography>
+            </Container>
+        );
+    }
+
+    if (notFound || !plan) {
+        return (
+            <Container maxWidth="lg" sx={{ py: 4 }}>
+                <Typography variant="h6" gutterBottom>
+                    Jídelníček nenalezen
+                </Typography>
+                <Button variant="outlined" startIcon={<ArrowBackIcon />} component={Link} to="/plan">
+                    Zpět na jídelníčky
+                </Button>
+            </Container>
+        );
+    }
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }} className="meal-plan-page">
@@ -459,67 +396,118 @@ export function MealPlan() {
                 }}
             />
 
-            {/* Print-only title */}
             <Box className="print-only" sx={{ mb: 2 }}>
                 <Typography variant="h4" sx={{ color: "#000", fontWeight: 700 }}>
-                    Jídelníček
+                    {plan.name}
                 </Typography>
                 <Typography variant="body2" sx={{ color: "#555" }}>
-                    {printRangeLabel}
+                    {formatRangeLabel(plan.startDate, plan.endDate)}
                 </Typography>
             </Box>
 
-            {/* Header */}
-            <Box
-                className="no-print"
-                sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    gap: 1,
-                    mb: 3,
-                }}
-            >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <CalendarMonthIcon color="primary" />
-                    <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}>
-                        Jídelníček
-                    </Typography>
+            <Box className="no-print" sx={{ mb: 3 }}>
+                <Button
+                    variant="text"
+                    size="small"
+                    startIcon={<ArrowBackIcon />}
+                    component={Link}
+                    to="/plan"
+                    sx={{ mb: 1, ml: -1, color: "text.secondary" }}
+                >
+                    Jídelníčky
+                </Button>
+
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        flexWrap: "wrap",
+                        gap: 1,
+                    }}
+                >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+                        <EditableName value={plan.name} onCommit={setName} />
+                        <SaveStatusChip status={status} />
+                    </Box>
+
+                    <Stack direction="row" gap={1} flexWrap="wrap">
+                        {plannedCount > 0 && (
+                            <>
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<PrintIcon />}
+                                    onClick={() => window.print()}
+                                >
+                                    Tisk / PDF
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<DescriptionIcon />}
+                                    onClick={handleExportDocx}
+                                >
+                                    Stáhnout DOCX
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<ShoppingCartIcon />}
+                                    component={Link}
+                                    to="/nakup"
+                                    onClick={handleAddAllToShopping}
+                                >
+                                    Přidat vše do nákupu
+                                </Button>
+                            </>
+                        )}
+                    </Stack>
                 </Box>
 
-                <Stack direction="row" gap={1} flexWrap="wrap">
-                    {plannedCount > 0 && (
-                        <>
-                            <Button
-                                variant="outlined"
-                                startIcon={<PrintIcon />}
-                                onClick={() => window.print()}
-                            >
-                                Tisk / PDF
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                startIcon={<DescriptionIcon />}
-                                onClick={handleExportDocx}
-                            >
-                                Stáhnout DOCX
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                startIcon={<ShoppingCartIcon />}
-                                component={Link}
-                                to="/nakup"
-                                onClick={handleAddAllToShopping}
-                            >
-                                Přidat vše do nákupu
-                            </Button>
-                        </>
-                    )}
+                <Stack
+                    direction="row"
+                    alignItems="center"
+                    gap={1}
+                    flexWrap="wrap"
+                    sx={{ mt: 2 }}
+                >
+                    <TextField
+                        size="small"
+                        type="date"
+                        label="Od"
+                        value={plan.startDate}
+                        onChange={(e) => applyRange(e.target.value, plan.endDate)}
+                        slotProps={{ inputLabel: { shrink: true } }}
+                    />
+                    <TextField
+                        size="small"
+                        type="date"
+                        label="Do"
+                        value={plan.endDate}
+                        onChange={(e) => applyRange(plan.startDate, e.target.value)}
+                        slotProps={{ inputLabel: { shrink: true } }}
+                    />
+                    <Button
+                        size="small"
+                        variant="text"
+                        onClick={() => {
+                            const r = thisWeekRange();
+                            applyRange(r.startDate, r.endDate);
+                        }}
+                    >
+                        Tento týden
+                    </Button>
+                    <Button
+                        size="small"
+                        variant="text"
+                        onClick={() => {
+                            const r = nextWeekRange();
+                            applyRange(r.startDate, r.endDate);
+                        }}
+                    >
+                        Příští týden
+                    </Button>
                 </Stack>
             </Box>
 
-            {/* Desktop: 7-column grid / Mobile: vertical list */}
             <Box
                 className="meal-plan-grid"
                 sx={{
@@ -533,49 +521,48 @@ export function MealPlan() {
                     gap: 2,
                 }}
             >
-                {weekDays.map((date, i) => (
+                {days.map((date, i) => (
                     <RevealOnScroll key={date} delay={i * 0.05}>
-                    <Box
-                        className="meal-plan-day"
-                        sx={{
-                            p: 1.5,
-                            border: 1,
-                            borderColor: isToday(date) ? "primary.main" : "divider",
-                            borderRadius: 2,
-                            bgcolor: isToday(date) ? "rgba(64, 31, 10, 0.06)" : "background.paper",
-                        }}
-                    >
-                        {/* Day header */}
-                        <Typography
-                            variant="subtitle2"
-                            fontWeight={isToday(date) ? 700 : 500}
-                            color={isToday(date) ? "primary.main" : "text.primary"}
-                            mb={1.5}
+                        <Box
+                            className="meal-plan-day"
+                            sx={{
+                                p: 1.5,
+                                border: 1,
+                                borderColor: isToday(date) ? "primary.main" : "divider",
+                                borderRadius: 2,
+                                bgcolor: isToday(date) ? "rgba(64, 31, 10, 0.06)" : "background.paper",
+                            }}
                         >
-                            {formatDayHeader(date)}
-                            {isToday(date) && (
-                                <Typography
-                                    component="span"
-                                    variant="caption"
-                                    sx={{ ml: 0.75, color: "primary.main" }}
-                                >
-                                    (dnes)
-                                </Typography>
-                            )}
-                        </Typography>
+                            <Typography
+                                variant="subtitle2"
+                                fontWeight={isToday(date) ? 700 : 500}
+                                color={isToday(date) ? "primary.main" : "text.primary"}
+                                mb={1.5}
+                            >
+                                {formatDayHeader(date)}
+                                {isToday(date) && (
+                                    <Typography
+                                        component="span"
+                                        variant="caption"
+                                        sx={{ ml: 0.75, color: "primary.main" }}
+                                    >
+                                        (dnes)
+                                    </Typography>
+                                )}
+                            </Typography>
 
-                        <Stack spacing={1.5}>
-                            {SLOTS.map((slot) => (
-                                <SlotCell
-                                    key={slot}
-                                    slot={slot}
-                                    meal={getMeal(date, slot)}
-                                    onAdd={() => openPicker(date, slot)}
-                                    onRemove={removeMeal}
-                                />
-                            ))}
-                        </Stack>
-                    </Box>
+                            <Stack spacing={1.5}>
+                                {SLOTS.map((slot) => (
+                                    <SlotCell
+                                        key={slot}
+                                        slot={slot}
+                                        meal={getMeal(date, slot)}
+                                        onAdd={() => openPicker(date, slot)}
+                                        onRemove={() => removeMeal(date, slot)}
+                                    />
+                                ))}
+                            </Stack>
+                        </Box>
                     </RevealOnScroll>
                 ))}
             </Box>
